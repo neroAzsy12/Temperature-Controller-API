@@ -1,0 +1,304 @@
+from flask import Blueprint, jsonify, request
+from utils.helpers import (
+    create_instrument, 
+    get_current_timestamp, 
+    celsius_to_fahrenheit, 
+    fahrenheit_to_celsius
+)
+
+setpoint_blueprint = Blueprint('setpoint', __name__)
+
+# Setpoint Registers
+MINIMUM_SETPOINT_REGISTER = 201 # Register for minimum setpoint temperature
+MAXIMUM_SETPOINT_REGISTER = 202 # Register for maximum setpoint temperature
+SETPOINT_REGISTER = 203         # Register for setpoint temperature
+
+# Routes
+@setpoint_blueprint.route('/setpoint', methods=["POST"])
+def set_setpoint():
+    """
+    Set a new setpoint temperature
+
+    This endpoint allows you to set a new temperature setpoint. The provided setpoint
+    must be within range defined by the minimum and maximum setpoints. The unit of
+    the temperature can be specified via a query parameter ('C' for Celsius or 'F' for Fahrenheit).
+    
+    Parameters:
+        - setpoint (float): The desired temperature setpoint to be set (in the request body)
+        - unit (string): The unit of the setpoint ('C' or 'F') provided as a query parameter. Defaults to 'C'.
+
+    Returns:
+        - JSON response with status and new setpoint value (in the specified unit), the unit, and a timestamp if successful
+        - Error message if the setpoint is out of range or if the input is invalid. 
+    """
+    new_setpoint = request.json.get('setpoint')                     # get from request body
+    unit = request.args.get('unit', default='C', type=str).upper()  # get from query parameter
+
+    if new_setpoint is None:
+        return jsonify({"error": "Setpoint value is required"}), 400
+    
+    if unit not in ['C', 'F']:
+        return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
+    
+    instrument = create_instrument()
+    if instrument is None:
+        return jsonify({"error": "Failed to create instrument"}), 500
+    
+    # Read current min and max setpoints
+    try:
+        min_setpoint = instrument.read_register(registeraddress=MINIMUM_SETPOINT_REGISTER, number_of_decimals=1, signed=True)
+        max_setpoint = instrument.read_register(registeraddress=MAXIMUM_SETPOINT_REGISTER, number_of_decimals=1, signed=True)
+
+        # Convert min and max to the same unit as the new setpoint
+        if unit == 'F':
+            min_setpoint = celsius_to_fahrenheit(min_setpoint)
+            max_setpoint = celsius_to_fahrenheit(max_setpoint)
+
+        # Check if the new setpoint is within the allowed range
+        if not (min_setpoint <= new_setpoint <= max_setpoint):
+            return jsonify({
+                "error": f"Setpoint must be betweeen {min_setpoint} and {max_setpoint} {unit}."
+            }), 400
+        
+        # Convert new setpoint to Celsius before writing to the register
+        celsius_setpoint = fahrenheit_to_celsius(new_setpoint) if unit == 'F' else new_setpoint
+        instrument.write_register(registeraddress=SETPOINT_REGISTER, value=celsius_setpoint, number_of_decimals=1, functioncode=6, signed=True)
+
+        response_setpoint = celsius_setpoint if unit == 'C' else new_setpoint
+        return jsonify({
+            "status": "Setpoint updated",
+            "setpoint": response_setpoint,
+            "unit": unit,
+            "timestamp": get_current_timestamp()
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500
+
+@setpoint_blueprint.route('/setpoint', methods=["GET"])
+def read_setpoint():
+    """
+    Read the current setpoint temperature.
+
+    This endpoint retrieves the current temperature setpoint and returns it along with
+    the unit that can be specified via a query parameter ('C' for Celsius or 'F' for Fahrenheit) and a timestamp.
+
+    Returns:
+        JSON response with the current setpoint value in the specified unit and a timestamp.
+    """
+    unit = request.args.get('unit', default='C', type=str).upper()  # get from query parameter
+    if unit not in ['C', 'F']:
+        return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
+    
+    instrument = create_instrument()
+    if instrument is None:
+        return jsonify({"error": "Failed to create instrument."}), 500
+   
+    try:
+        setpoint_value = instrument.read_register(registeraddress=SETPOINT_REGISTER, number_of_decimals=1, signed=True)
+
+        if unit == 'F':
+            setpoint_value = celsius_to_fahrenheit(setpoint_value)
+        
+        return jsonify({
+            "setpoint": setpoint_value,
+            "unit": unit,
+            "timestamp": get_current_timestamp()
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500
+
+@setpoint_blueprint.route('/setpoint/min', methods=["POST"])
+def set_min_setpoint():
+    """
+    Sets a new minimum setpoint temperature.
+
+    This endpoint allows you to set a new minimum temperature setpoint. The provided minimum
+    setpoint must be between -50°C (-58°F) and the current maximum setpoint. The unit of the temperature
+    can be specified via a query parameter ('C' for Celsius or 'F' for Fahrenheit).
+    
+    Parameters:
+        - min_setpoint (float): The desired minimum temperature setpoint to be set (in the request body).
+        - unit (string): The unit of the minimum setpoint ('C' or 'F') provided as a query parameter. Defaults to 'C'.
+
+    Returns:
+        - JSON response with status and new minimum setpoint value (in the specified unit), the unit, and a timestamp if successful
+        - Error message if the setpoint is out of range or if the input is invalid. 
+    """
+    MIN_SETPOINT = -50                                              # Min setpoint allowed, -50 C (-58 F)
+    new_min_setpoint = request.json.get('min_setpoint')             # get from request body
+    unit = request.args.get('unit', default='C', type=str).upper()  # get from query parameter
+
+    if new_min_setpoint is None:
+        return jsonify({"error": "Minimum setpoint value is required"}), 400
+    
+    if unit not in ['C', 'F']:
+        return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
+    
+    instrument = create_instrument()
+    if instrument is None:
+        return jsonify({"error": "Failed to create instrument"}), 500
+    
+    # Read current max setpoint
+    try:
+        max_setpoint = instrument.read_register(registeraddress=MAXIMUM_SETPOINT_REGISTER, number_of_decimals=1, signed=True)
+        tmp_setpoint = new_min_setpoint
+
+        # Convert MIN_SETPOINT and max_setpoint to the same unit as the new min setpoint
+        if unit == 'F':
+            max_setpoint = celsius_to_fahrenheit(max_setpoint)
+            MIN_SETPOINT = -58
+            tmp_setpoint = fahrenheit_to_celsius(tmp_setpoint)
+
+        # Check if the new setpoint is within the allowed range
+        if not (MIN_SETPOINT <= new_min_setpoint <= max_setpoint):
+            return jsonify({
+                "error": f"Minimum setpoint must be betweeen {MIN_SETPOINT} and {max_setpoint} {unit}."
+            }), 400
+        
+        instrument.write_register(registeraddress=MINIMUM_SETPOINT_REGISTER, value=tmp_setpoint, number_of_decimals=1, functioncode=6, signed=True)
+        
+        return jsonify({
+            "status": "Minimum setpoint updated",
+            "min_setpoint": new_min_setpoint,
+            "unit": unit,
+            "timestamp": get_current_timestamp()
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500
+
+@setpoint_blueprint.route('/setpoint/min', methods=["GET"])
+def read_min_setpoint():
+    """
+    Read the current minimum setpoint temperature.
+
+    This endpoint retrieves the current minimum temperature setpoint and returns it along with
+    the unit that can be specified via a query parameter ('C' for Celsius or 'F' for Fahrenheit) and a timestamp.
+
+    Returns:
+        JSON response with the current minimum setpoint value in the specified unit and a timestamp.
+    """
+    unit = request.args.get('unit', default='C', type=str).upper()  # get from query parameter
+    if unit not in ['C', 'F']:
+        return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
+    
+    instrument = create_instrument()
+    if instrument is None:
+        return jsonify({"error": "Failed to create instrument."}), 500
+   
+    try:
+        min_setpoint_value = instrument.read_register(registeraddress=MINIMUM_SETPOINT_REGISTER, number_of_decimals=1, signed=True)
+
+        if unit == 'F':
+            min_setpoint_value = celsius_to_fahrenheit(min_setpoint_value)
+        
+        return jsonify({
+            "min_setpoint": min_setpoint_value,
+            "unit": unit,
+            "timestamp": get_current_timestamp()
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500
+
+@setpoint_blueprint.route('/setpoint/max', methods=["POST"])
+def set_max_setpoint():
+    """
+    Sets a new maximum setpoint temperature.
+
+    This endpoint allows you to set a new maximum temperature setpoint. The provided maximum
+    setpoint must be between 110°C (180°F) and the current maximum setpoint. The unit of the temperature
+    can be specified via a query parameter ('C' for Celsius or 'F' for Fahrenheit).
+    
+    Parameters:
+        - max_setpoint (float): The desired maximum temperature setpoint to be set (in the request body).
+        - unit (string): The unit of the minimum setpoint ('C' or 'F') provided as a query parameter. Defaults to 'C'.
+
+    Returns:
+        - JSON response with status and new maximum setpoint value (in the specified unit), the unit, and a timestamp if successful
+        - Error message if the setpoint is out of range or if the input is invalid. 
+    """
+    MAX_SETPOINT = 110                                              # Max setpoint allowed, 110 C (180 F)
+    new_max_setpoint = request.json.get('max_setpoint')             # get from request body
+    unit = request.args.get('unit', default='C', type=str).upper()  # get from query parameter
+
+    if new_max_setpoint is None:
+        return jsonify({"error": "Maximum setpoint value is required"}), 400
+    
+    if unit not in ['C', 'F']:
+        return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
+    
+    instrument = create_instrument()
+    if instrument is None:
+        return jsonify({"error": "Failed to create instrument"}), 500
+    
+    # Read current min setpoint
+    try:
+        min_setpoint = instrument.read_register(registeraddress=MINIMUM_SETPOINT_REGISTER, number_of_decimals=1, signed=True)
+        tmp_setpoint = new_max_setpoint
+
+        # Convert min_setpoint and MAX_SETPOINT to the same unit as the new max setpoint
+        if unit == 'F':
+            min_setpoint = celsius_to_fahrenheit(min_setpoint)
+            MAX_SETPOINT = 180
+            tmp_setpoint = fahrenheit_to_celsius(new_max_setpoint)
+
+        # Check if the new setpoint is within the allowed range
+        if not (min_setpoint <= new_max_setpoint <= MAX_SETPOINT):
+            return jsonify({
+                "error": f"Maximum setpoint must be betweeen {min_setpoint} and {MAX_SETPOINT} {unit}."
+            }), 400
+        
+        instrument.write_register(registeraddress=MAXIMUM_SETPOINT_REGISTER, value=tmp_setpoint, number_of_decimals=1, functioncode=6, signed=True)
+        
+        return jsonify({
+                "status": "Maximum setpoint updated",
+                "max_setpoint": new_max_setpoint,
+                "unit": unit,
+                "timestamp": get_current_timestamp()
+            }), 200
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500
+    
+@setpoint_blueprint.route('/setpoint/max', methods=["GET"])
+def read_max_setpoint():
+    """
+    Read the current maximum setpoint temperature.
+
+    This endpoint retrieves the current maximum temperature setpoint and returns it along with
+    the unit that can be specified via a query parameter ('C' for Celsius or 'F' for Fahrenheit) and a timestamp.
+
+    Returns:
+        JSON response with the current maximum setpoint value in the specified unit and a timestamp.
+    """
+    unit = request.args.get('unit', default='C', type=str).upper()  # get from query parameter
+    if unit not in ['C', 'F']:
+        return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
+    
+    instrument = create_instrument()
+    if instrument is None:
+        return jsonify({"error": "Failed to create instrument."}), 500
+   
+    try:
+        max_setpoint_value = instrument.read_register(registeraddress=MAXIMUM_SETPOINT_REGISTER, number_of_decimals=1, signed=True)
+
+        if unit == 'F':
+            max_setpoint_value = celsius_to_fahrenheit(max_setpoint_value)
+        
+        return jsonify({
+            "max_setpoint": max_setpoint_value,
+            "unit": unit,
+            "timestamp": get_current_timestamp()
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500
