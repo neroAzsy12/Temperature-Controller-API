@@ -10,9 +10,9 @@ def create_app():
     CORS(app)
 
     # Register the probe blueprint with the '/api/v1'
-    app.register_blueprint(compressor_blueprint, url_prefix='/api/v1')
-    app.register_blueprint(probe_blueprint, url_prefix='/api/v1')
-    app.register_blueprint(setpoint_blueprint, url_prefix='/api/v1')
+    app.register_blueprint(compressor_blueprint, url_prefix='/temperature-controller/api/v1')
+    app.register_blueprint(probe_blueprint, url_prefix='/temperature-controller/api/v1')
+    app.register_blueprint(setpoint_blueprint, url_prefix='/temperature-controller/api/v1')
 
     return app
 
