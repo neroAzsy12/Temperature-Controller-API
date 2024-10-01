@@ -5,6 +5,9 @@ from utils.helpers import (
     celsius_to_fahrenheit, 
     fahrenheit_to_celsius
 )
+from utils.validators import (
+    validate_device_id
+)
 
 setpoint_blueprint = Blueprint('setpoint', __name__)
 
@@ -15,7 +18,7 @@ SETPOINT_REGISTER = 203         # Register for setpoint temperature
 
 # Routes
 @setpoint_blueprint.route('/setpoint', methods=["POST"])
-def set_setpoint():
+def set_setpoint(device_id):
     """
     Set a new setpoint temperature
 
@@ -23,6 +26,9 @@ def set_setpoint():
     must be within range defined by the minimum and maximum setpoints. The unit of
     the temperature can be specified via a query parameter ('C' for Celsius or 'F' for Fahrenheit).
     
+    Path Parameter:
+        device_id (str): Required. Specify which device you want the request for
+
     Parameters:
         - setpoint (float): The desired temperature setpoint to be set (in the request body)
         - unit (string): The unit of the setpoint ('C' or 'F') provided as a query parameter. Defaults to 'C'.
@@ -31,6 +37,8 @@ def set_setpoint():
         - JSON response with status and new setpoint value (in the specified unit), the unit, and a timestamp if successful
         - Error message if the setpoint is out of range or if the input is invalid. 
     """
+    validate_device_id(device_id)
+
     new_setpoint = request.json.get('setpoint')                     # get from request body
     unit = request.args.get('unit', default='C', type=str).upper()  # get from query parameter
 
@@ -77,16 +85,21 @@ def set_setpoint():
         }), 500
 
 @setpoint_blueprint.route('/setpoint', methods=["GET"])
-def read_setpoint():
+def read_setpoint(device_id):
     """
     Read the current setpoint temperature.
 
     This endpoint retrieves the current temperature setpoint and returns it along with
     the unit that can be specified via a query parameter ('C' for Celsius or 'F' for Fahrenheit) and a timestamp.
 
+    Path Parameter:
+        device_id (str): Required. Specify which device you want the request for
+
     Returns:
         JSON response with the current setpoint value in the specified unit and a timestamp.
     """
+    validate_device_id(device_id)
+
     unit = request.args.get('unit', default='C', type=str).upper()  # get from query parameter
     if unit not in ['C', 'F']:
         return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
@@ -112,7 +125,7 @@ def read_setpoint():
         }), 500
 
 @setpoint_blueprint.route('/setpoint/min', methods=["POST"])
-def set_min_setpoint():
+def set_min_setpoint(device_id):
     """
     Sets a new minimum setpoint temperature.
 
@@ -120,6 +133,9 @@ def set_min_setpoint():
     setpoint must be between -50°C (-58°F) and the current maximum setpoint. The unit of the temperature
     can be specified via a query parameter ('C' for Celsius or 'F' for Fahrenheit).
     
+    Path Parameter:
+        device_id (str): Required. Specify which device you want the request for
+
     Parameters:
         - min_setpoint (float): The desired minimum temperature setpoint to be set (in the request body).
         - unit (string): The unit of the minimum setpoint ('C' or 'F') provided as a query parameter. Defaults to 'C'.
@@ -128,6 +144,8 @@ def set_min_setpoint():
         - JSON response with status and new minimum setpoint value (in the specified unit), the unit, and a timestamp if successful
         - Error message if the setpoint is out of range or if the input is invalid. 
     """
+    validate_device_id(device_id)
+
     MIN_SETPOINT = -50                                              # Min setpoint allowed, -50 C (-58 F)
     new_min_setpoint = request.json.get('min_setpoint')             # get from request body
     unit = request.args.get('unit', default='C', type=str).upper()  # get from query parameter
@@ -173,16 +191,21 @@ def set_min_setpoint():
         }), 500
 
 @setpoint_blueprint.route('/setpoint/min', methods=["GET"])
-def read_min_setpoint():
+def read_min_setpoint(device_id):
     """
     Read the current minimum setpoint temperature.
 
     This endpoint retrieves the current minimum temperature setpoint and returns it along with
     the unit that can be specified via a query parameter ('C' for Celsius or 'F' for Fahrenheit) and a timestamp.
 
+    Path Parameter:
+        device_id (str): Required. Specify which device you want the request for
+
     Returns:
         JSON response with the current minimum setpoint value in the specified unit and a timestamp.
     """
+    validate_device_id(device_id)
+
     unit = request.args.get('unit', default='C', type=str).upper()  # get from query parameter
     if unit not in ['C', 'F']:
         return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
@@ -208,7 +231,7 @@ def read_min_setpoint():
         }), 500
 
 @setpoint_blueprint.route('/setpoint/max', methods=["POST"])
-def set_max_setpoint():
+def set_max_setpoint(device_id):
     """
     Sets a new maximum setpoint temperature.
 
@@ -216,6 +239,9 @@ def set_max_setpoint():
     setpoint must be between 110°C (180°F) and the current maximum setpoint. The unit of the temperature
     can be specified via a query parameter ('C' for Celsius or 'F' for Fahrenheit).
     
+    Path Parameter:
+        device_id (str): Required. Specify which device you want the request for
+
     Parameters:
         - max_setpoint (float): The desired maximum temperature setpoint to be set (in the request body).
         - unit (string): The unit of the minimum setpoint ('C' or 'F') provided as a query parameter. Defaults to 'C'.
@@ -224,6 +250,8 @@ def set_max_setpoint():
         - JSON response with status and new maximum setpoint value (in the specified unit), the unit, and a timestamp if successful
         - Error message if the setpoint is out of range or if the input is invalid. 
     """
+    validate_device_id(device_id)
+
     MAX_SETPOINT = 110                                              # Max setpoint allowed, 110 C (180 F)
     new_max_setpoint = request.json.get('max_setpoint')             # get from request body
     unit = request.args.get('unit', default='C', type=str).upper()  # get from query parameter
@@ -269,16 +297,21 @@ def set_max_setpoint():
         }), 500
     
 @setpoint_blueprint.route('/setpoint/max', methods=["GET"])
-def read_max_setpoint():
+def read_max_setpoint(device_id):
     """
     Read the current maximum setpoint temperature.
 
     This endpoint retrieves the current maximum temperature setpoint and returns it along with
     the unit that can be specified via a query parameter ('C' for Celsius or 'F' for Fahrenheit) and a timestamp.
 
+    Path Parameter:
+        device_id (str): Required. Specify which device you want the request for
+        
     Returns:
         JSON response with the current maximum setpoint value in the specified unit and a timestamp.
     """
+    validate_device_id(device_id)
+    
     unit = request.args.get('unit', default='C', type=str).upper()  # get from query parameter
     if unit not in ['C', 'F']:
         return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400

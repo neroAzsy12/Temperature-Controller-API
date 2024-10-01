@@ -2,4 +2,4 @@ Flask>=3.0.3
 Flask-Cors>=5.0.0
 minimalmodbus>=2.1.1
 pyserial>=3.5
-tzlocal>=5.w=2
+tzlocal>=5.2

@@ -27,22 +27,17 @@ def fahrenheit_to_celsius(fahrenheit):
     celsius = (fahrenheit - 32) / 1.8
     return round(celsius, 1) # Round to the nearest tenth
 
-CONTROLLER_CONFIG = {
-    "lae-controller": {
-        "mode": minimalmodbus.MODE_ASCII,
-        "baudrate": 9600,
-        "bytesize": 7,
-        "parity": minimalmodbus.serial.PARITY_EVEN,
-        "stopbits": 1,
-        "timeout": 3
-    }
-}
-
 DEVICE_CONFIG = {
     "device01": {
-        "type": "lae_controller",
+        "raspberryPi": "rp1",
         "port": "COM5",
-        "address": 1
+        "slaveAddress": 1,
+        "mode": "ASCII",
+        "baudrate": 9600,
+        "bytesize": 7,
+        "parity": "E",
+        "stopbits": 1,
+        "timeout": 3
     }
 }
 
@@ -50,15 +45,29 @@ def create_instrument(device="device01"):
     """Create and return a MinimalModbus instrument instance."""
     try:
         device_config = DEVICE_CONFIG[device]
-        device_type = CONTROLLER_CONFIG[device_config["type"]]
         
-        client = minimalmodbus.Instrument(device_config["port"], slaveaddress=device_config["address"])
-        client.mode = device_type["mode"]
-        client.serial.baudrate = device_type["baudrate"]
-        client.serial.bytesize = device_type["bytesize"]
-        client.serial.parity = device_type["parity"]
-        client.serial.stopbits = device_type["stopbits"]
-        client.serial.timeout = device_type["timeout"]
+        client = minimalmodbus.Instrument(device_config["port"], slaveaddress=device_config["slaveAddress"])
+        
+        # Set the minimalmodbus instrument mode (ASCII or RTU)
+        if device_config["mode"] == "ascii":
+            client.mode = minimalmodbus.MODE_ASCII
+        else:
+            client.mode = minimalmodbus.MODE_RTU    
+
+        # Set the Bit Parity ('E'ven, 'O'dd, 'N'one)
+        if device_config["parity"] == 'E':
+            client.serial.parity = minimalmodbus.serial.PARITY_EVEN
+        elif device_config["parity"] == 'O':
+            client.serial.parity = minimalmodbus.serial.PARITY_ODD
+        elif device_config["parity"] == 'N':
+            client.serial.parity = minimalmodbus.serial.PARITY_NONE
+        else:
+            client.serial.parity = minimalmodbus.serial.PARITY_MARK
+        
+        client.serial.baudrate = device_config["baudrate"]
+        client.serial.bytesize = device_config["bytesize"]
+        client.serial.stopbits = device_config["stopbits"]
+        client.serial.timeout = device_config["timeout"]
 
         client.close_port_after_each_call = True 
         client.clear_buffers_before_each_transaction = True

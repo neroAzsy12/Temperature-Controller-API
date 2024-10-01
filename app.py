@@ -10,12 +10,12 @@ def create_app():
     CORS(app)
 
     # Register the probe blueprint with the '/api/v1'
-    app.register_blueprint(compressor_blueprint, url_prefix='/temperature-controller/api/v1')
-    app.register_blueprint(probe_blueprint, url_prefix='/temperature-controller/api/v1')
-    app.register_blueprint(setpoint_blueprint, url_prefix='/temperature-controller/api/v1')
+    app.register_blueprint(compressor_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
+    app.register_blueprint(probe_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
+    app.register_blueprint(setpoint_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
 
     return app
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5001)  # Deploy on port 5001

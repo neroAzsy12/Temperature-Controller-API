@@ -4,6 +4,9 @@ from utils.helpers import (
     get_current_timestamp,  
     celsius_to_fahrenheit
 )
+from utils.validators import (
+    validate_device_id
+)
 
 probe_blueprint = Blueprint('probe', __name__)
 
@@ -14,12 +17,15 @@ T2_ENABLED_REGISTER = 705                       # Register for enabling/disablin
 
 # Routes
 @probe_blueprint.route('/probe/temperature/t1', methods = ["GET"])
-def read_temperature_t1():
+def read_temperature_t1(device_id):
     """
     Read the current Air probe temperature (T1)
 
     This endpoint retrieves the current temperature from Probe T1 and returns it in the specified unit (Celsius or Fahrenheit)
     along with a timestamp, and T1
+
+    Path Parameter:
+        device_id (str): Required. Specify which device you want the request for
 
     Query Parameters:
         unit (str): Optional. Specify the temperature unit:
@@ -29,6 +35,8 @@ def read_temperature_t1():
     Returns:
         JSON response with the current temperature from Probe T1 in the specified unit and a timestamp
     """
+    validate_device_id(device_id)
+
     unit = request.args.get('unit', default='C', type=str).upper()
     
     if unit not in ['C', 'F']:
@@ -57,12 +65,15 @@ def read_temperature_t1():
         }), 500
 
 @probe_blueprint.route('/probe/temperature/t2', methods=["GET"])
-def read_temperature_t2():
+def read_temperature_t2(device_id):
     """
     Read the Evaporator probe temperature (T2)
 
     This endpoint retrieves the current temperature from Probe T2 and returns it in the specified unit (Celsius or Fahrenheit)
     along with a timestamp, and T2
+
+    Path Parameter:
+        device_id (str): Required. Specify which device you want the request for
 
     Query Parameters:
         unit (str): Optional. Specify the temperature unit:
@@ -72,6 +83,8 @@ def read_temperature_t2():
     Returns:
         JSON response with the current temperature from Probe T2 in the specified unit and a timestamp
     """
+    validate_device_id(device_id)
+
     unit = request.args.get('unit', default='C', type=str).upper()
     
     if unit not in ['C', 'F']:
@@ -106,15 +119,20 @@ def read_temperature_t2():
         }), 500
     
 @probe_blueprint.route('/probe/status/t2', methods=["GET"])
-def get_t2_probe_status():
+def get_t2_probe_status(device_id):
     """
     Check the status of Probe T2
 
     This endpoint retrieves the status of Probe T2 (enabled or disabled).
 
+    Path Parameter:
+        device_id (str): Required. Specify which device you want the request for
+
     Returns:
         - JSON response the status of Probe T2
     """
+    validate_device_id(device_id)
+
     instrument = create_instrument()
     if instrument is None:
         return jsonify({
@@ -133,13 +151,18 @@ def get_t2_probe_status():
         }), 500
     
 @probe_blueprint.route("/probe/enable/t2", methods=["POST"])
-def enable_probe_t2():
+def enable_probe_t2(device_id):
     """
     Enable T2 probe
     
+    Path Parameter:
+        device_id (str): Required. Specify which device you want the request for
+
     Returns:
         JSON: A JSON object indicating that probe T2 has been enabled or was already enabled
     """
+    validate_device_id(device_id)
+
     instrument = create_instrument()
     if instrument is None:
         return jsonify({
@@ -167,13 +190,18 @@ def enable_probe_t2():
         }), 500
 
 @probe_blueprint.route("/probe/disable/t2", methods=["POST"])
-def disable_probe_t2():
+def disable_probe_t2(device_id):
     """
     Disable T2 probe
     
+    Path Parameter:
+        device_id (str): Required. Specify which device you want the request for
+
     Returns:
         JSON: A JSON object indicating that probe T2 has been disabled or was already disabled
     """
+    validate_device_id(device_id)
+    
     instrument = create_instrument()
     if instrument is None:
         return jsonify({
