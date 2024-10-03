@@ -37,7 +37,7 @@ DEVICE_CONFIG = {
         "bytesize": 7,
         "parity": "E",
         "stopbits": 1,
-        "timeout": 3
+        "timeout": 10
     }
 }
 
