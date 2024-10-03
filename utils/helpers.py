@@ -20,7 +20,7 @@ def get_current_timestamp():
 def celsius_to_fahrenheit(celsius):
     """Convert Celsius to Fahrenheit and round to the nearest whole number."""
     fahrenheit = (celsius * 1.8) + 32
-    return round(fahrenheit)
+    return round(fahrenheit, 1)
 
 def fahrenheit_to_celsius(fahrenheit):
     """Convert Fahrenheit to Celsius and round to the nearest tenth."""
