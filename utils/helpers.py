@@ -49,7 +49,7 @@ def create_instrument(device="device01"):
         client = minimalmodbus.Instrument(device_config["port"], slaveaddress=device_config["slaveAddress"])
         
         # Set the minimalmodbus instrument mode (ASCII or RTU)
-        if device_config["mode"] == "ascii":
+        if device_config["mode"] == "ASCII":
             client.mode = minimalmodbus.MODE_ASCII
         else:
             client.mode = minimalmodbus.MODE_RTU    
