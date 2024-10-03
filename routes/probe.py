@@ -47,7 +47,7 @@ def read_temperature_t1(device_id):
         return jsonify({"error": "Failed to create instrument"}), 500
     
     try:
-        temperature = instrument.read_register(registeraddress=T1_AIR_PROBE_TEMPERATURE_REGISTER, number_of_decimals=1, signed=True)
+        temperature = instrument.read_register(registeraddress=T1_AIR_PROBE_TEMPERATURE_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
 
         if unit == 'F':
             temperature = celsius_to_fahrenheit(temperature)
@@ -96,13 +96,13 @@ def read_temperature_t2(device_id):
     
     try:
         # Check if the probe T2 is enabled
-        probe_enabled = instrument.read_register(registeraddress=T2_ENABLED_REGISTER)
+        probe_enabled = instrument.read_register(registeraddress=T2_ENABLED_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
         if not probe_enabled:
             return jsonify({
                 "error": "Probe is disabled. Cannot read temperature."
             }), 400
         
-        temperature = instrument.read_register(registeraddress=T2_EVAPORATOR_PROBE_TEMPERATURE_REGISTER, number_of_decimals=1, signed=True)
+        temperature = instrument.read_register(registeraddress=T2_EVAPORATOR_PROBE_TEMPERATURE_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
 
         if unit == 'F':
             temperature = celsius_to_fahrenheit(temperature)
@@ -140,7 +140,7 @@ def get_t2_probe_status(device_id):
         }), 500
     
     try:
-        probe_enabled = instrument.read_register(registeraddress=T2_ENABLED_REGISTER, signed=True)
+        probe_enabled = instrument.read_register(registeraddress=T2_ENABLED_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
         return jsonify({
             "enabled": bool(probe_enabled),
             "timestamp": get_current_timestamp()
@@ -170,13 +170,13 @@ def enable_probe_t2(device_id):
         }), 500
     
     try:
-        probe_enabled = instrument.read_register(registeraddress=T2_ENABLED_REGISTER, signed=True)
+        probe_enabled = instrument.read_register(registeraddress=T2_ENABLED_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
         if probe_enabled:
             return jsonify({
                 "status": "T2 probe is already enabled."
             }), 200
         
-        instrument.write_register(registeraddress=T2_ENABLED_REGISTER, value=1, functioncode=6)
+        instrument.write_register(registeraddress=T2_ENABLED_REGISTER, value=1, number_of_decimals=0, functioncode=6, signed=False)
         timestamp = get_current_timestamp
 
         return jsonify({
@@ -209,13 +209,13 @@ def disable_probe_t2(device_id):
         }), 500
     
     try:
-        probe_enabled = instrument.read_register(registeraddress=T2_ENABLED_REGISTER, signed=True)
+        probe_enabled = instrument.read_register(registeraddress=T2_ENABLED_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
         if not probe_enabled:
             return jsonify({
                 "status": "T2 probe is already disabled."
             }), 200
         
-        instrument.write_register(registeraddress=T2_ENABLED_REGISTER, value=0, functioncode=6)
+        instrument.write_register(registeraddress=T2_ENABLED_REGISTER, value=0, number_of_decimals=0, functioncode=6, signed=False)
         timestamp = get_current_timestamp
 
         return jsonify({

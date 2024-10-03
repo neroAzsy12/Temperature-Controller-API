@@ -54,8 +54,8 @@ def set_setpoint(device_id):
     
     # Read current min and max setpoints
     try:
-        min_setpoint = instrument.read_register(registeraddress=MINIMUM_SETPOINT_REGISTER, number_of_decimals=1, signed=True)
-        max_setpoint = instrument.read_register(registeraddress=MAXIMUM_SETPOINT_REGISTER, number_of_decimals=1, signed=True)
+        min_setpoint = instrument.read_register(registeraddress=MINIMUM_SETPOINT_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+        max_setpoint = instrument.read_register(registeraddress=MAXIMUM_SETPOINT_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
 
         # Convert min and max to the same unit as the new setpoint
         if unit == 'F':
@@ -70,7 +70,7 @@ def set_setpoint(device_id):
         
         # Convert new setpoint to Celsius before writing to the register
         celsius_setpoint = fahrenheit_to_celsius(new_setpoint) if unit == 'F' else new_setpoint
-        instrument.write_register(registeraddress=SETPOINT_REGISTER, value=celsius_setpoint, number_of_decimals=1, functioncode=6, signed=True)
+        instrument.write_register(registeraddress=SETPOINT_REGISTER, value=float(celsius_setpoint), number_of_decimals=1, functioncode=6, signed=True)
 
         response_setpoint = celsius_setpoint if unit == 'C' else new_setpoint
         return jsonify({
@@ -109,7 +109,7 @@ def read_setpoint(device_id):
         return jsonify({"error": "Failed to create instrument."}), 500
    
     try:
-        setpoint_value = instrument.read_register(registeraddress=SETPOINT_REGISTER, number_of_decimals=1, signed=True)
+        setpoint_value = instrument.read_register(registeraddress=SETPOINT_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
 
         if unit == 'F':
             setpoint_value = celsius_to_fahrenheit(setpoint_value)
@@ -162,7 +162,7 @@ def set_min_setpoint(device_id):
     
     # Read current max setpoint
     try:
-        max_setpoint = instrument.read_register(registeraddress=MAXIMUM_SETPOINT_REGISTER, number_of_decimals=1, signed=True)
+        max_setpoint = instrument.read_register(registeraddress=MAXIMUM_SETPOINT_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
         tmp_setpoint = new_min_setpoint
 
         # Convert MIN_SETPOINT and max_setpoint to the same unit as the new min setpoint
@@ -177,7 +177,7 @@ def set_min_setpoint(device_id):
                 "error": f"Minimum setpoint must be betweeen {MIN_SETPOINT} and {max_setpoint} {unit}."
             }), 400
         
-        instrument.write_register(registeraddress=MINIMUM_SETPOINT_REGISTER, value=tmp_setpoint, number_of_decimals=1, functioncode=6, signed=True)
+        instrument.write_register(registeraddress=MINIMUM_SETPOINT_REGISTER, value=float(tmp_setpoint), number_of_decimals=1, functioncode=6, signed=True)
         
         return jsonify({
             "status": "Minimum setpoint updated",
@@ -215,7 +215,7 @@ def read_min_setpoint(device_id):
         return jsonify({"error": "Failed to create instrument."}), 500
    
     try:
-        min_setpoint_value = instrument.read_register(registeraddress=MINIMUM_SETPOINT_REGISTER, number_of_decimals=1, signed=True)
+        min_setpoint_value = instrument.read_register(registeraddress=MINIMUM_SETPOINT_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
 
         if unit == 'F':
             min_setpoint_value = celsius_to_fahrenheit(min_setpoint_value)
@@ -268,7 +268,7 @@ def set_max_setpoint(device_id):
     
     # Read current min setpoint
     try:
-        min_setpoint = instrument.read_register(registeraddress=MINIMUM_SETPOINT_REGISTER, number_of_decimals=1, signed=True)
+        min_setpoint = instrument.read_register(registeraddress=MINIMUM_SETPOINT_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
         tmp_setpoint = new_max_setpoint
 
         # Convert min_setpoint and MAX_SETPOINT to the same unit as the new max setpoint
@@ -283,7 +283,7 @@ def set_max_setpoint(device_id):
                 "error": f"Maximum setpoint must be betweeen {min_setpoint} and {MAX_SETPOINT} {unit}."
             }), 400
         
-        instrument.write_register(registeraddress=MAXIMUM_SETPOINT_REGISTER, value=tmp_setpoint, number_of_decimals=1, functioncode=6, signed=True)
+        instrument.write_register(registeraddress=MAXIMUM_SETPOINT_REGISTER, value=float(tmp_setpoint), number_of_decimals=1, functioncode=6, signed=True)
         
         return jsonify({
                 "status": "Maximum setpoint updated",
@@ -321,7 +321,7 @@ def read_max_setpoint(device_id):
         return jsonify({"error": "Failed to create instrument."}), 500
    
     try:
-        max_setpoint_value = instrument.read_register(registeraddress=MAXIMUM_SETPOINT_REGISTER, number_of_decimals=1, signed=True)
+        max_setpoint_value = instrument.read_register(registeraddress=MAXIMUM_SETPOINT_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
 
         if unit == 'F':
             max_setpoint_value = celsius_to_fahrenheit(max_setpoint_value)

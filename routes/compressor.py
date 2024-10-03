@@ -47,7 +47,7 @@ def set_hy0_differential(device_id):
                 "error": "Differential must be betweeen 1.0 and 10.0"
             }), 400
         
-        instrument.write_register(registeraddress=HY0_REGISTER, value=hy0_differential, number_of_decimals=1, functioncode=6, signed=False)
+        instrument.write_register(registeraddress=HY0_REGISTER, value=int(hy0_differential), number_of_decimals=0, functioncode=6, signed=False)
         
         return jsonify({
             "HY0": hy0_differential,
@@ -78,7 +78,7 @@ def read_hy0_differential(device_id):
         return jsonify({"error": "Failed to create instrument"}), 500
     
     try:
-        hy0_differential = instrument.read_register(registeraddress=HY0_REGISTER, number_of_decimals=1, signed=False)
+        hy0_differential = instrument.read_register(registeraddress=HY0_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
 
         return jsonify({
             "HY0": hy0_differential,
@@ -121,7 +121,7 @@ def set_hy1_differential(device_id):
                 "error": "Differential must be betweeen 0.0 and 10.0"
             }), 400
         
-        instrument.write_register(registeraddress=HY1_REGISTER, value=hy1_differential, number_of_decimals=1, functioncode=6, signed=False)
+        instrument.write_register(registeraddress=HY1_REGISTER, value=int(hy1_differential), number_of_decimals=0, functioncode=6, signed=False)
         
         return jsonify({
             "HY1": hy1_differential,
@@ -152,7 +152,7 @@ def read_hy1_differential(device_id):
         return jsonify({"error": "Failed to create instrument"}), 500
     
     try:
-        hy1_differential = instrument.read_register(registeraddress=HY1_REGISTER, number_of_decimals=1, signed=False)
+        hy1_differential = instrument.read_register(registeraddress=HY1_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
 
         return jsonify({
             "HY1": hy1_differential,
@@ -195,7 +195,7 @@ def set_compressor_rest_time(device_id):
                 "error": "Compressor rest time must be betweeen 0 and 30"
             }), 400
         
-        instrument.write_register(registeraddress=CRT_REGISTER, value=crt, number_of_decimals=0, functioncode=6, signed=False)
+        instrument.write_register(registeraddress=CRT_REGISTER, value=int(crt), number_of_decimals=0, functioncode=6, signed=False)
         
         return jsonify({
             "CRT": crt,
@@ -226,7 +226,7 @@ def read_compressor_rest_time(device_id):
         return jsonify({"error": "Failed to create instrument"}), 500
     
     try:
-        crt = instrument.read_register(registeraddress=CRT_REGISTER, number_of_decimals=0, signed=False)
+        crt = instrument.read_register(registeraddress=CRT_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
 
         return jsonify({
             "CRT": crt,
