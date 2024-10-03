@@ -30,7 +30,7 @@ def fahrenheit_to_celsius(fahrenheit):
 DEVICE_CONFIG = {
     "device01": {
         "raspberryPi": "rp1",
-        "port": "COM5",
+        "port": "/dev/ttyUSB0",
         "slaveAddress": 1,
         "mode": "ASCII",
         "baudrate": 9600,
