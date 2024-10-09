@@ -3,6 +3,7 @@ from flask_cors import CORS
 from routes.compressor import compressor_blueprint
 from routes.probe import probe_blueprint
 from routes.setpoint import setpoint_blueprint
+from routes.standby import standby_blueprint
 
 def create_app():
     app = Flask(__name__)
@@ -10,9 +11,10 @@ def create_app():
     CORS(app)
 
     # Register the probe blueprint with the '/api/v1'
-    app.register_blueprint(compressor_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
+    #app.register_blueprint(compressor_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
     app.register_blueprint(probe_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
-    app.register_blueprint(setpoint_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
+    #app.register_blueprint(setpoint_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
+    #app.register_blueprint(standby_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
 
     return app
 

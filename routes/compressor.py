@@ -7,7 +7,7 @@ from utils.validators import (
     validate_device_id
 )
 
-compressor_blueprint = Blueprint('compressor', __name__)
+compressor_blueprint = Blueprint('compressor', __name__, url_prefix='/compressor')
 
 # HY0 and HY1 Registers
 HY0_REGISTER = 204  # Compressor Off to On, R/W
@@ -15,7 +15,7 @@ HY1_REGISTER = 205  # Compressor On to Off, R/W
 
 CRT_REGISTER = 206  # Compressor rest time (minutes)
 
-@compressor_blueprint.route('/compressor/hy0', methods=["POST"])
+@compressor_blueprint.route('/hy0', methods=["POST"])
 def set_hy0_differential(device_id):
     """
     Set the HY0 differential for compressor (Off to On)
@@ -58,7 +58,7 @@ def set_hy0_differential(device_id):
             "error": str(e)
         }), 500
 
-@compressor_blueprint.route('/compressor/hy0', methods=["GET"])
+@compressor_blueprint.route('/hy0', methods=["GET"])
 def read_hy0_differential(device_id):
     """
     Read the current HY0 differential.
@@ -89,7 +89,7 @@ def read_hy0_differential(device_id):
             "error": str(e)
         }), 500
 
-@compressor_blueprint.route('/compressor/hy1', methods=["POST"])
+@compressor_blueprint.route('/hy1', methods=["POST"])
 def set_hy1_differential(device_id):
     """
     Set the HY1 differential for compressor (On to Off)
@@ -132,7 +132,7 @@ def set_hy1_differential(device_id):
             "error": str(e)
         }), 500
     
-@compressor_blueprint.route('/compressor/hy1', methods=["GET"])
+@compressor_blueprint.route('/hy1', methods=["GET"])
 def read_hy1_differential(device_id):
     """
     Read the current HY1 differential.
@@ -163,7 +163,7 @@ def read_hy1_differential(device_id):
             "error": str(e)
         }), 500
 
-@compressor_blueprint.route('/compressor/rest-time', methods=["POST"])
+@compressor_blueprint.route('/rest-time', methods=["POST"])
 def set_compressor_rest_time(device_id):
     """
     Sets the rest time for compressor
@@ -206,7 +206,7 @@ def set_compressor_rest_time(device_id):
             "error": str(e)
         }), 500
 
-@compressor_blueprint.route('/compressor/rest-time', methods=["GET"])
+@compressor_blueprint.route('/rest-time', methods=["GET"])
 def read_compressor_rest_time(device_id):
     """
     Read the current compressor rest time.

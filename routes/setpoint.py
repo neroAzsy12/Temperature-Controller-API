@@ -9,7 +9,7 @@ from utils.validators import (
     validate_device_id
 )
 
-setpoint_blueprint = Blueprint('setpoint', __name__)
+setpoint_blueprint = Blueprint('setpoint', __name__, url_prefix='/setpoint')
 
 # Setpoint Registers
 MINIMUM_SETPOINT_REGISTER = 201 # Register for minimum setpoint temperature
@@ -17,7 +17,7 @@ MAXIMUM_SETPOINT_REGISTER = 202 # Register for maximum setpoint temperature
 SETPOINT_REGISTER = 203         # Register for setpoint temperature
 
 # Routes
-@setpoint_blueprint.route('/setpoint', methods=["POST"])
+@setpoint_blueprint.route('/', methods=["POST"])
 def set_setpoint(device_id):
     """
     Set a new setpoint temperature
@@ -84,7 +84,7 @@ def set_setpoint(device_id):
             "error": str(e)
         }), 500
 
-@setpoint_blueprint.route('/setpoint', methods=["GET"])
+@setpoint_blueprint.route('/', methods=["GET"])
 def read_setpoint(device_id):
     """
     Read the current setpoint temperature.
@@ -124,7 +124,7 @@ def read_setpoint(device_id):
             "error": str(e)
         }), 500
 
-@setpoint_blueprint.route('/setpoint/min', methods=["POST"])
+@setpoint_blueprint.route('/min', methods=["POST"])
 def set_min_setpoint(device_id):
     """
     Sets a new minimum setpoint temperature.
@@ -190,7 +190,7 @@ def set_min_setpoint(device_id):
             "error": str(e)
         }), 500
 
-@setpoint_blueprint.route('/setpoint/min', methods=["GET"])
+@setpoint_blueprint.route('/min', methods=["GET"])
 def read_min_setpoint(device_id):
     """
     Read the current minimum setpoint temperature.
@@ -230,7 +230,7 @@ def read_min_setpoint(device_id):
             "error": str(e)
         }), 500
 
-@setpoint_blueprint.route('/setpoint/max', methods=["POST"])
+@setpoint_blueprint.route('/max', methods=["POST"])
 def set_max_setpoint(device_id):
     """
     Sets a new maximum setpoint temperature.
@@ -296,7 +296,7 @@ def set_max_setpoint(device_id):
             "error": str(e)
         }), 500
     
-@setpoint_blueprint.route('/setpoint/max', methods=["GET"])
+@setpoint_blueprint.route('/max', methods=["GET"])
 def read_max_setpoint(device_id):
     """
     Read the current maximum setpoint temperature.
