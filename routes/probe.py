@@ -1,14 +1,15 @@
 from flask import Blueprint, jsonify, request
 from utils.helpers import (
-    create_instrument, 
+    create_instrument,
     get_current_timestamp,  
     celsius_to_fahrenheit
 )
 from utils.validators import (
     validate_device_id
 )
+import json
 
-probe_blueprint = Blueprint('probe', __name__)
+probe_blueprint = Blueprint('probe', __name__, url_prefix='/probes')
 
 # Probe configurations
 T1_AIR_PROBE_TEMPERATURE_REGISTER = 0           # Register for reading temperature from T1
@@ -16,7 +17,7 @@ T2_EVAPORATOR_PROBE_TEMPERATURE_REGISTER = 1    # Register for reading temperatu
 T2_ENABLED_REGISTER = 705                       # Register for enabling/disabling T2 probe, as well as checking the status
 
 # Routes
-@probe_blueprint.route('/probe/temperature/t1', methods = ["GET"])
+@probe_blueprint.route('/temperature/t1', methods = ["GET"])
 def read_temperature_t1(device_id):
     """
     Read the current Air probe temperature (T1)
@@ -42,7 +43,7 @@ def read_temperature_t1(device_id):
     if unit not in ['C', 'F']:
         return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
     
-    instrument = create_instrument("device01")
+    instrument = create_instrument(device_id)
     if instrument is None:
         return jsonify({"error": "Failed to create instrument"}), 500
     
@@ -64,7 +65,7 @@ def read_temperature_t1(device_id):
             "error": str(e)
         }), 500
 
-@probe_blueprint.route('/probe/temperature/t2', methods=["GET"])
+@probe_blueprint.route('/temperature/t2', methods=["GET"])
 def read_temperature_t2(device_id):
     """
     Read the Evaporator probe temperature (T2)
@@ -90,7 +91,7 @@ def read_temperature_t2(device_id):
     if unit not in ['C', 'F']:
         return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
     
-    instrument = create_instrument("device01")
+    instrument = create_instrument(device_id)
     if instrument is None:
         return jsonify({"error": "Failed to create instrument"}), 500
     
@@ -118,10 +119,10 @@ def read_temperature_t2(device_id):
             "error": str(e)
         }), 500
     
-@probe_blueprint.route('/probe/status/t2', methods=["GET"])
+@probe_blueprint.route('/status/t2', methods=["GET"])
 def get_t2_probe_status(device_id):
     """
-    Check the status of Probe T2
+    Checks the status of Probe T2
 
     This endpoint retrieves the status of Probe T2 (enabled or disabled).
 
@@ -129,11 +130,11 @@ def get_t2_probe_status(device_id):
         device_id (str): Required. Specify which device you want the request for
 
     Returns:
-        - JSON response the status of Probe T2
+        - JSON response the status of Probe T2, and a timestamp
     """
     validate_device_id(device_id)
 
-    instrument = create_instrument()
+    instrument = create_instrument(device_id)
     if instrument is None:
         return jsonify({
             "error": "Failed to create instrument"
@@ -150,20 +151,22 @@ def get_t2_probe_status(device_id):
             "error": str(e)
         }), 500
     
-@probe_blueprint.route("/probe/enable/t2", methods=["POST"])
+@probe_blueprint.route("/enable/t2", methods=["POST"])
 def enable_probe_t2(device_id):
     """
     Enable T2 probe
+
+    This endpoint enablenables the t2 probe if it is currently disabled
     
     Path Parameter:
         device_id (str): Required. Specify which device you want the request for
 
     Returns:
-        JSON: A JSON object indicating that probe T2 has been enabled or was already enabled
+        JSON: A JSON object indicating that probe T2 has been enabled or was already enabled and a timestamp
     """
     validate_device_id(device_id)
 
-    instrument = create_instrument()
+    instrument = create_instrument(device_id)
     if instrument is None:
         return jsonify({
             "error": "Failed to create instrument"
@@ -179,6 +182,14 @@ def enable_probe_t2(device_id):
         instrument.write_register(registeraddress=T2_ENABLED_REGISTER, value=1, number_of_decimals=0, functioncode=6, signed=False)
         timestamp = get_current_timestamp
 
+        # update device_id-controller-settings.json
+        file = open('./testData/device01-controller-settings.json', 'w+')
+        data = json.load(file)
+        current_mode = data["currentMode"]
+        data[current_mode]["isT2Enabled"] = 1
+        json.dump(data, file, ensure_ascii=False, indent=4)
+        file.close()
+
         return jsonify({
             "status": "enabled",
             "timestamp": timestamp
@@ -189,20 +200,22 @@ def enable_probe_t2(device_id):
             "error": str(e)
         }), 500
 
-@probe_blueprint.route("/probe/disable/t2", methods=["POST"])
+@probe_blueprint.route("/disable/t2", methods=["POST"])
 def disable_probe_t2(device_id):
     """
     Disable T2 probe
+
+    This endpoint disables the t2 probe if it is currently enabled
     
     Path Parameter:
         device_id (str): Required. Specify which device you want the request for
 
     Returns:
-        JSON: A JSON object indicating that probe T2 has been disabled or was already disabled
+        JSON: A JSON object indicating that probe T2 has been disabled or was already disabled and a timestamp
     """
     validate_device_id(device_id)
     
-    instrument = create_instrument()
+    instrument = create_instrument(device_id)
     if instrument is None:
         return jsonify({
             "error": "Failed to create instrument"
@@ -217,6 +230,13 @@ def disable_probe_t2(device_id):
         
         instrument.write_register(registeraddress=T2_ENABLED_REGISTER, value=0, number_of_decimals=0, functioncode=6, signed=False)
         timestamp = get_current_timestamp
+
+        file = open('./testData/device01-controller-settings.json', 'w+')
+        data = json.load(file)
+        current_mode = data["currentMode"]
+        data[current_mode]["isT2Enabled"] = 0
+        json.dump(data, file, ensure_ascii=False, indent=4)
+        file.close()
 
         return jsonify({
             "status": "disabled",
