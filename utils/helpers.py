@@ -1,6 +1,7 @@
 from datetime import datetime
 from tzlocal import get_localzone
 import minimalmodbus
+import json
 
 def get_current_timestamp():
     """Returns a timestamp in the form 'YYYY-MM-DDThh:mm:ssTZD'"""
@@ -27,27 +28,17 @@ def fahrenheit_to_celsius(fahrenheit):
     celsius = (fahrenheit - 32) / 1.8
     return round(celsius, 1) # Round to the nearest tenth
 
-DEVICE_CONFIG = {
-    "device01": {
-        "raspberryPi": "rp1",
-        "port": "/dev/ttyUSB0",
-        "slaveAddress": 1,
-        "mode": "ASCII",
-        "baudrate": 9600,
-        "bytesize": 7,
-        "parity": "E",
-        "stopbits": 1,
-        "timeout": 10
-    }
-}
-
-def create_instrument(device="device01"):
-    """Create and return a MinimalModbus instrument instance."""
+def create_instrument(device):
+    """ Create and return a MinimalModBus instrument instance. """
     try:
-        device_config = DEVICE_CONFIG[device]
-        
-        client = minimalmodbus.Instrument(device_config["port"], slaveaddress=device_config["slaveAddress"])
-        
+        print("Accessing json file for device: ", device)
+        # if device exists, get the necessary config for creating minimalmodbus instrument
+        file = open("./testData/device01-config.json", "r")
+        device_config = json.load(file)
+        file.close()
+
+        client = minimalmodbus.Instrument(port=device_config["port"], slaveaddress=device_config["slaveAddress"])
+
         # Set the minimalmodbus instrument mode (ASCII or RTU)
         if device_config["mode"] == "ASCII":
             client.mode = minimalmodbus.MODE_ASCII
@@ -75,7 +66,6 @@ def create_instrument(device="device01"):
         # Test the connection
         client.read_register(199)
         return client
-    
     except Exception as e:
         print(f"Error creating instrument: {e}")
         return None
