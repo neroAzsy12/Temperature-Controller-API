@@ -4,7 +4,8 @@ import minimalmodbus
 import os
 import json
 
-parent_directory = os.path.dirname(__file__)
+current_directory = os.path.dirname(__file__)
+parent_directory = os.path.dirname(current_directory)
 testData_directory = 'testData'
 config_filename = 'device01-config.json'
 settings_filename = 'device01-controller-settings.json'
