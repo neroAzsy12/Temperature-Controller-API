@@ -29,7 +29,7 @@ def get_device_settings(device_id):
         data = json.load(file)
         file.close()
 
-        return jsonify(data, 200)
+        return jsonify(data)
     
     except Exception as e:
         return jsonify({
@@ -56,7 +56,7 @@ def get_device_config(device_id):
         data = json.load(file)
         file.close()
 
-        return jsonify(data, 200)
+        return jsonify(data)
     
     except Exception as e:
         return jsonify({
