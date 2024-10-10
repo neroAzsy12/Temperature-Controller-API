@@ -9,7 +9,7 @@ from utils.validators import (
 )
 import json
 
-probe_blueprint = Blueprint('probe', __name__, url_prefix='/probes')
+probe_blueprint = Blueprint('probe', __name__)
 
 # Probe configurations
 T1_AIR_PROBE_TEMPERATURE_REGISTER = 0           # Register for reading temperature from T1
@@ -17,7 +17,7 @@ T2_EVAPORATOR_PROBE_TEMPERATURE_REGISTER = 1    # Register for reading temperatu
 T2_ENABLED_REGISTER = 705                       # Register for enabling/disabling T2 probe, as well as checking the status
 
 # Routes
-@probe_blueprint.route('/temperature/t1', methods = ["GET"])
+@probe_blueprint.route('/probe/temperature/t1', methods = ["GET"])
 def read_temperature_t1(device_id):
     """
     Read the current Air probe temperature (T1)
@@ -65,7 +65,7 @@ def read_temperature_t1(device_id):
             "error": str(e)
         }), 500
 
-@probe_blueprint.route('/temperature/t2', methods=["GET"])
+@probe_blueprint.route('/probe/temperature/t2', methods=["GET"])
 def read_temperature_t2(device_id):
     """
     Read the Evaporator probe temperature (T2)
@@ -119,7 +119,7 @@ def read_temperature_t2(device_id):
             "error": str(e)
         }), 500
     
-@probe_blueprint.route('/status/t2', methods=["GET"])
+@probe_blueprint.route('/probe/status/t2', methods=["GET"])
 def get_t2_probe_status(device_id):
     """
     Checks the status of Probe T2
@@ -151,7 +151,7 @@ def get_t2_probe_status(device_id):
             "error": str(e)
         }), 500
     
-@probe_blueprint.route("/enable/t2", methods=["POST"])
+@probe_blueprint.route("/probe/enable/t2", methods=["POST"])
 def enable_probe_t2(device_id):
     """
     Enable T2 probe
@@ -199,7 +199,7 @@ def enable_probe_t2(device_id):
             "error": str(e)
         }), 500
 
-@probe_blueprint.route("/disable/t2", methods=["POST"])
+@probe_blueprint.route("/probe/disable/t2", methods=["POST"])
 def disable_probe_t2(device_id):
     """
     Disable T2 probe
