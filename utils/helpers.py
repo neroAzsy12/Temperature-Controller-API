@@ -33,7 +33,7 @@ def create_instrument(device):
     try:
         print("Accessing json file for device: ", device)
         # if device exists, get the necessary config for creating minimalmodbus instrument
-        file = open("./testData/device01-config.json", "r")
+        file = open("../testData/device01-config.json", "r")
         device_config = json.load(file)
         file.close()
 
