@@ -1,7 +1,17 @@
 from datetime import datetime
 from tzlocal import get_localzone
 import minimalmodbus
+import os
 import json
+
+parent_directory = os.path.dirname(__file__)
+testData_directory = 'testData'
+config_filename = 'device01-config.json'
+settings_filename = 'device01-controller-settings.json'
+
+# File paths
+DEVICE01_CONFIG_FILE_PATH = os.path.join(parent_directory, testData_directory, config_filename)
+DEVICE01_CONTROLLER_SETTINGS_FILE_PATH = os.path.join(parent_directory, testData_directory, settings_filename)
 
 def get_current_timestamp():
     """Returns a timestamp in the form 'YYYY-MM-DDThh:mm:ssTZD'"""
@@ -33,7 +43,7 @@ def create_instrument(device):
     try:
         print("Accessing json file for device: ", device)
         # if device exists, get the necessary config for creating minimalmodbus instrument
-        file = open("../testData/device01-config.json", "r")
+        file = open(DEVICE01_CONFIG_FILE_PATH, "r")
         device_config = json.load(file)
         file.close()
 

@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from utils.helpers import (
+    DEVICE01_CONTROLLER_SETTINGS_FILE_PATH,
     create_instrument,
     get_current_timestamp,  
     celsius_to_fahrenheit
@@ -183,7 +184,7 @@ def enable_probe_t2(device_id):
         timestamp = get_current_timestamp
 
         # update device_id-controller-settings.json
-        file = open('./testData/device01-controller-settings.json', 'w+')
+        file = open(DEVICE01_CONTROLLER_SETTINGS_FILE_PATH, 'w+')
         data = json.load(file)
         data["isT2Enabled"] = 1
         json.dump(data, file, ensure_ascii=False, indent=4)
@@ -230,7 +231,7 @@ def disable_probe_t2(device_id):
         instrument.write_register(registeraddress=T2_ENABLED_REGISTER, value=0, number_of_decimals=0, functioncode=6, signed=False)
         timestamp = get_current_timestamp
 
-        file = open('./testData/device01-controller-settings.json', 'w+')
+        file = open(DEVICE01_CONTROLLER_SETTINGS_FILE_PATH, 'w+')
         data = json.load(file)
         data["isT2Enabled"] = 0
         json.dump(data, file, ensure_ascii=False, indent=4)
