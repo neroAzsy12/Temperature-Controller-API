@@ -185,8 +185,7 @@ def enable_probe_t2(device_id):
         # update device_id-controller-settings.json
         file = open('./testData/device01-controller-settings.json', 'w+')
         data = json.load(file)
-        current_mode = data["currentMode"]
-        data[current_mode]["isT2Enabled"] = 1
+        data["isT2Enabled"] = 1
         json.dump(data, file, ensure_ascii=False, indent=4)
         file.close()
 
@@ -233,8 +232,7 @@ def disable_probe_t2(device_id):
 
         file = open('./testData/device01-controller-settings.json', 'w+')
         data = json.load(file)
-        current_mode = data["currentMode"]
-        data[current_mode]["isT2Enabled"] = 0
+        data["isT2Enabled"] = 0
         json.dump(data, file, ensure_ascii=False, indent=4)
         file.close()
 

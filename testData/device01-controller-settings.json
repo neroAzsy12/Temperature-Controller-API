@@ -1,7 +1,8 @@
 {
     "currentMode": "FRZ",
+    "isT2Enabled": 0,
+    "isManualStandbyDisabled": 0,
     "FRZ": {
-        "isT2Enabled": 0,
         "maxSetpoint": 100,
         "minSetpoint": -5,
         "setpoint": 88,
@@ -9,7 +10,6 @@
         "hy1": 4
     },
     "COOLER": {
-        "isT2Enabled": 0,
         "maxSetpoint": 100,
         "minSetpoint": -5,
         "setpoint": 88,
