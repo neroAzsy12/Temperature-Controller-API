@@ -7,13 +7,20 @@ from utils.validators import (
     validate_device_id
 )
 
-compressor_blueprint = Blueprint('compressor', __name__, url_prefix='/compressor')
-
 # HY0 and HY1 Registers
 HY0_REGISTER = 204  # Compressor Off to On, R/W
 HY1_REGISTER = 205  # Compressor On to Off, R/W
-
 CRT_REGISTER = 206  # Compressor rest time (minutes)
+
+compressor_blueprint = Blueprint('compressor', __name__, url_prefix='/compressor')
+rs485_device_collection = None
+rs485_device_settings_collection = None
+
+def init_app(app, db):
+    global rs485_device_collection
+    global rs485_device_settings_collection
+    rs485_device_collection = db['rs485_devices']
+    rs485_device_settings_collection = db['rs485_device_controller_settings']
 
 @compressor_blueprint.route('/hy0', methods=["POST"])
 def set_hy0_differential(device_id):
@@ -31,13 +38,13 @@ def set_hy0_differential(device_id):
     Returns:
         - JSON response with the newly set HY0 differential and a timestamp
     """
-    validate_device_id(device_id)
+    validate_device_id(device_id, rs485_device_collection)
 
     hy0_differential = request.json.get("differential")
     if hy0_differential is None:
         return jsonify({"error": "Differential value is required"}), 400
     
-    instrument = create_instrument()
+    instrument = create_instrument(device_id, rs485_device_collection)
     if instrument is None:
         return jsonify({"error": "Failed to create instrument"}), 500
     
@@ -71,9 +78,9 @@ def read_hy0_differential(device_id):
     Returns:
         JSON response with the current HY0 differential value and a timestamp.
     """
-    validate_device_id(device_id)
+    validate_device_id(device_id, rs485_device_collection)
 
-    instrument = create_instrument()
+    instrument = create_instrument(device_id, rs485_device_collection)
     if instrument is None:
         return jsonify({"error": "Failed to create instrument"}), 500
     
@@ -105,13 +112,13 @@ def set_hy1_differential(device_id):
     Returns:
         - JSON response with the newly set differential and a timestamp
     """
-    validate_device_id(device_id)
+    validate_device_id(device_id, rs485_device_collection)
 
     hy1_differential = request.json.get("differential")
     if hy1_differential is None:
         return jsonify({"error": "Differential value is required"}), 400
     
-    instrument = create_instrument()
+    instrument = create_instrument(device_id, rs485_device_collection)
     if instrument is None:
         return jsonify({"error": "Failed to create instrument"}), 500
     
@@ -145,9 +152,9 @@ def read_hy1_differential(device_id):
     Returns:
         JSON response with the current HY1 differential value and a timestamp.
     """
-    validate_device_id(device_id)
+    validate_device_id(device_id, rs485_device_collection)
 
-    instrument = create_instrument()
+    instrument = create_instrument(device_id, rs485_device_collection)
     if instrument is None:
         return jsonify({"error": "Failed to create instrument"}), 500
     
@@ -179,13 +186,13 @@ def set_compressor_rest_time(device_id):
     Returns:
         - JSON response with the newly set rest time and a timestamp
     """
-    validate_device_id(device_id)
+    validate_device_id(device_id, rs485_device_collection)
 
     crt = request.json.get("rest_time")
     if crt is None:
         return jsonify({"error": "Rest time value is required"}), 400
     
-    instrument = create_instrument()
+    instrument = create_instrument(device_id, rs485_device_collection)
     if instrument is None:
         return jsonify({"error": "Failed to create instrument"}), 500
     
@@ -219,9 +226,9 @@ def read_compressor_rest_time(device_id):
     Returns:
         JSON response with the current compressor rest time and a timestamp.
     """
-    validate_device_id(device_id)
+    validate_device_id(device_id, rs485_device_collection)
     
-    instrument = create_instrument()
+    instrument = create_instrument(device_id, rs485_device_collection)
     if instrument is None:
         return jsonify({"error": "Failed to create instrument"}), 500
     
