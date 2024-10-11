@@ -87,7 +87,7 @@ def set_setpoint(device_id):
 
         rs485_device_settings_collection.update_one(
             {"device_name": device_id},
-            {"$set": {f"{currentMode}.setpoint": celsius_setpoint}}
+            {"$set": {f"{currentMode["currentMode"]}.setpoint": celsius_setpoint}}
         )
 
         return jsonify({
@@ -202,7 +202,7 @@ def set_min_setpoint(device_id):
 
         rs485_device_settings_collection.update_one(
             {"device_name": device_id},
-            {"$set": {f"{currentMode}.minSetPoint": celsius_min_setpoint}}
+            {"$set": {f"{currentMode["currentMode"]}.minSetPoint": celsius_min_setpoint}}
         )
 
         return jsonify({
@@ -317,7 +317,7 @@ def set_max_setpoint(device_id):
 
         rs485_device_settings_collection.update_one(
             {"device_name": device_id},
-            {"$set": {f"{currentMode}.maxSetPoint": celsius_max_setpoint}}
+            {"$set": {f"{currentMode["currentMode"]}.maxSetPoint": celsius_max_setpoint}}
         )
 
         return jsonify({
