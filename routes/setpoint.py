@@ -80,14 +80,16 @@ def set_setpoint(device_id):
         celsius_setpoint = fahrenheit_to_celsius(new_setpoint) if unit == 'F' else new_setpoint
         instrument.write_register(registeraddress=SETPOINT_REGISTER, value=float(celsius_setpoint), number_of_decimals=1, functioncode=6, signed=True)
 
-        currentMode = rs485_device_settings_collection.find_one(
+        result = rs485_device_settings_collection.find_one(
             {"device_name": device_id},
             {"currentMode": 1, "_id": 0}
         )
 
+        mode = result['currentMode']
+
         rs485_device_settings_collection.update_one(
             {"device_name": device_id},
-            {"$set": {f"{currentMode["currentMode"]}.setpoint": celsius_setpoint}}
+            {"$set": {f"{mode}.setpoint": celsius_setpoint}}
         )
 
         return jsonify({
@@ -195,14 +197,15 @@ def set_min_setpoint(device_id):
         celsius_min_setpoint = fahrenheit_to_celsius(new_min_setpoint) if unit == 'F' else new_min_setpoint
         instrument.write_register(registeraddress=MINIMUM_SETPOINT_REGISTER, value=float(celsius_min_setpoint), number_of_decimals=1, functioncode=6, signed=True)
         
-        currentMode = rs485_device_settings_collection.find_one(
+        result = rs485_device_settings_collection.find_one(
             {"device_name": device_id},
             {"currentMode": 1, "_id": 0}
         )
+        mode = result['currentMode']
 
         rs485_device_settings_collection.update_one(
             {"device_name": device_id},
-            {"$set": {f"{currentMode["currentMode"]}.minSetPoint": celsius_min_setpoint}}
+            {"$set": {f"{mode}.minSetPoint": celsius_min_setpoint}}
         )
 
         return jsonify({
@@ -310,14 +313,15 @@ def set_max_setpoint(device_id):
         celsius_max_setpoint = fahrenheit_to_celsius(new_max_setpoint) if unit == 'F' else new_max_setpoint
         instrument.write_register(registeraddress=MAXIMUM_SETPOINT_REGISTER, value=float(celsius_max_setpoint), number_of_decimals=1, functioncode=6, signed=True)
         
-        currentMode = rs485_device_settings_collection.find_one(
+        result = rs485_device_settings_collection.find_one(
             {"device_name": device_id},
             {"currentMode": 1, "_id": 0}
         )
+        mode = result['currentMode']
 
         rs485_device_settings_collection.update_one(
             {"device_name": device_id},
-            {"$set": {f"{currentMode["currentMode"]}.maxSetPoint": celsius_max_setpoint}}
+            {"$set": {f"{mode}.maxSetPoint": celsius_max_setpoint}}
         )
 
         return jsonify({
