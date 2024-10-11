@@ -290,7 +290,7 @@ def set_max_setpoint(device_id):
     
     if unit not in ['C', 'F']:
         return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
-    
+     
     instrument = create_instrument(device_id, rs485_device_collection)
     if instrument is None:
         return jsonify({"error": "Failed to create instrument"}), 500
