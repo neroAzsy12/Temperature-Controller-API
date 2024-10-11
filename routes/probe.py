@@ -188,7 +188,7 @@ def enable_probe_t2(device_id):
             }), 200
         
         instrument.write_register(registeraddress=T2_ENABLED_REGISTER, value=1, number_of_decimals=0, functioncode=6, signed=False)
-        timestamp = get_current_timestamp
+        timestamp = get_current_timestamp()
 
         # update device-controller-settings
         rs485_device_settings_collection.update_one(
@@ -235,7 +235,7 @@ def disable_probe_t2(device_id):
             }), 200
         
         instrument.write_register(registeraddress=T2_ENABLED_REGISTER, value=0, number_of_decimals=0, functioncode=6, signed=False)
-        timestamp = get_current_timestamp
+        timestamp = get_current_timestamp()
 
         rs485_device_settings_collection.update_one(
             {"device_name": device_id},
