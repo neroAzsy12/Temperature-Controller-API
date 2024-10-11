@@ -3,4 +3,5 @@ Flask-Cors>=5.0.0
 minimalmodbus>=2.1.1
 pymongo>=4.10.1
 pyserial>=3.5
+python-dotenv>=1.0.1
 tzlocal>=5.2
