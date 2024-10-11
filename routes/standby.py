@@ -83,7 +83,7 @@ def turn_standby_on(device_id):
         }), 500
 
 @standby_blueprint.route('/standby/off', methods = ["POST"])
-def turn_standby_on(device_id):
+def turn_standby_off(device_id):
     validate_device_id(device_id, rs485_device_collection)
 
     instrument = create_instrument(device_id, rs485_device_collection)
