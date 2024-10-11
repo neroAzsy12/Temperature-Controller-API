@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from utils.helpers import (
-    create_instrument, 
+    create_instrument,
     get_current_timestamp, 
     celsius_to_fahrenheit, 
     fahrenheit_to_celsius
