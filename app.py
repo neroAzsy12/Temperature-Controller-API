@@ -5,7 +5,7 @@ from routes.compressor import compressor_blueprint
 from routes.device import device_blueprint, init_app as init_device
 from routes.probe import probe_blueprint, init_app as init_probe
 from routes.setpoint import setpoint_blueprint, init_app as init_setpoint
-from routes.standby import standby_blueprint
+from routes.standby import standby_blueprint, init_app as init_standby
 from config import Config
 
 def create_app():
@@ -22,13 +22,14 @@ def create_app():
     app.register_blueprint(device_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
     app.register_blueprint(probe_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
     app.register_blueprint(setpoint_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
-    #app.register_blueprint(standby_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
+    app.register_blueprint(standby_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
 
     # Initialize the collections needed for the routes
     init_device(app, db)
     init_probe(app, db)
     init_setpoint(app, db)
-
+    init_standby(app, db)
+    
     return app
 
 if __name__ == "__main__":
