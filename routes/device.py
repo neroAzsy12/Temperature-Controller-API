@@ -1,10 +1,5 @@
 from flask import Blueprint, jsonify
-from utils.helpers import (
-    DEVICE01_CONTROLLER_SETTINGS_FILE_PATH,
-    DEVICE01_CONFIG_FILE_PATH
-)
 from utils.validators import validate_device_id
-import json
 
 device_blueprint = Blueprint('device', __name__)
 rs485_device_collection = None
