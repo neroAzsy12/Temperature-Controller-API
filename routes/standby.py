@@ -7,8 +7,8 @@ from utils.validators import (
     validate_device_id
 )
 
-STANDBY_REGISTER = 700          # Register for Standby (set on/off for standby)
-MANUAL_STANDBY_REGISTER = 701   # Register for Manual Standby (enable/disable the power button on display)
+MANUAL_STANDBY_REGISTER = 700   # Register for Manual Standby (enable/disable the power button on display)
+STANDBY_REGISTER = 701          # Register for Standby (set on/off for standby)
 
 standby_blueprint = Blueprint("standby", __name__, url_prefix='/standby')
 rs485_device_collection = None
@@ -72,7 +72,6 @@ def turn_standby_on(device_id):
             }), 200
         
         instrument.write_register(registeraddress=STANDBY_REGISTER, value=int(1), number_of_decimals=0, functioncode=6, signed=False)
-        
         return jsonify({
             "status": "Standby Mode is on",
             "timestamp": get_current_timestamp()
