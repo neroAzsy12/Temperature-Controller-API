@@ -1,18 +1,6 @@
 from datetime import datetime
 from tzlocal import get_localzone
 import minimalmodbus
-import os
-import json
-
-current_directory = os.path.dirname(__file__)
-parent_directory = os.path.dirname(current_directory)
-test_data_directory = 'testData'
-config_filename = 'device01-config.json'
-settings_filename = 'device01-controller-settings.json'
-
-# File paths
-DEVICE01_CONFIG_FILE_PATH = os.path.join(parent_directory, test_data_directory, config_filename)
-DEVICE01_CONTROLLER_SETTINGS_FILE_PATH = os.path.join(parent_directory, test_data_directory, settings_filename)
 
 def get_current_timestamp():
     """Returns a timestamp in the form 'YYYY-MM-DDThh:mm:ssTZD'"""

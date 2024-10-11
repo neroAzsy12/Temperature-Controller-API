@@ -17,7 +17,7 @@ def init_app(app, db):
     rs485_device_settings_collection = db['rs485_device_controller_settings']
 
 #Routes
-@device_blueprint.route('/device/settings', methods=["GET"])
+@device_blueprint.route('/device/config', methods=["GET"])
 def get_device_settings(device_id):
     """
     Checks the device controller settings for device_id
@@ -34,14 +34,14 @@ def get_device_settings(device_id):
 
     try:
         device = rs485_device_collection.find_one({"device_name": device_id}, {"_id": 0})
-        return jsonify(device, 200)
+        return jsonify(device), 200
     
     except Exception as e:
         return jsonify({
             "error": str(e)
         }), 500
 
-@device_blueprint.route('/device/config', methods=["GET"])
+@device_blueprint.route('/device/settings', methods=["GET"])
 def get_device_config(device_id):
     """
     Checks the device controller config for device_id
@@ -58,7 +58,7 @@ def get_device_config(device_id):
     
     try:
         device_settings = rs485_device_settings_collection.find_one({"device_name": device_id}, {"_id": 0})
-        return jsonify(device_settings, 200)
+        return jsonify(device_settings), 200
     
     except Exception as e:
         return jsonify({
