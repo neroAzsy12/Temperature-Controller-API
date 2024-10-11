@@ -8,14 +8,21 @@ from utils.helpers import (
 from utils.validators import (
     validate_device_id
 )
-import json
-
-probe_blueprint = Blueprint('probe', __name__)
 
 # Probe configurations
 T1_AIR_PROBE_TEMPERATURE_REGISTER = 0           # Register for reading temperature from T1
 T2_EVAPORATOR_PROBE_TEMPERATURE_REGISTER = 1    # Register for reading temperature from T2
 T2_ENABLED_REGISTER = 705                       # Register for enabling/disabling T2 probe, as well as checking the status
+
+probe_blueprint = Blueprint('probe', __name__)
+rs485_device_collection = None
+rs485_device_settings_collection = None
+
+def init_app(app, db):
+    global rs485_device_collection
+    global rs485_device_settings_collection
+    rs485_device_collection = db['rs485_devices']
+    rs485_device_settings_collection = db['rs485_device_controller_settings']
 
 # Routes
 @probe_blueprint.route('/probe/temperature/t1', methods = ["GET"])
@@ -37,14 +44,14 @@ def read_temperature_t1(device_id):
     Returns:
         JSON response with the current temperature from Probe T1 in the specified unit and a timestamp
     """
-    validate_device_id(device_id)
+    validate_device_id(device_id, rs485_device_collection)
 
     unit = request.args.get('unit', default='C', type=str).upper()
     
     if unit not in ['C', 'F']:
         return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
     
-    instrument = create_instrument(device_id)
+    instrument = create_instrument(device_id, rs485_device_collection)
     if instrument is None:
         return jsonify({"error": "Failed to create instrument"}), 500
     
@@ -85,14 +92,14 @@ def read_temperature_t2(device_id):
     Returns:
         JSON response with the current temperature from Probe T2 in the specified unit and a timestamp
     """
-    validate_device_id(device_id)
+    validate_device_id(device_id, rs485_device_collection)
 
     unit = request.args.get('unit', default='C', type=str).upper()
     
     if unit not in ['C', 'F']:
         return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
     
-    instrument = create_instrument(device_id)
+    instrument = create_instrument(device_id, rs485_device_collection)
     if instrument is None:
         return jsonify({"error": "Failed to create instrument"}), 500
     
@@ -133,9 +140,9 @@ def get_t2_probe_status(device_id):
     Returns:
         - JSON response the status of Probe T2, and a timestamp
     """
-    validate_device_id(device_id)
+    validate_device_id(device_id, rs485_device_collection)
 
-    instrument = create_instrument(device_id)
+    instrument = create_instrument(device_id, rs485_device_collection)
     if instrument is None:
         return jsonify({
             "error": "Failed to create instrument"
@@ -165,9 +172,9 @@ def enable_probe_t2(device_id):
     Returns:
         JSON: A JSON object indicating that probe T2 has been enabled or was already enabled and a timestamp
     """
-    validate_device_id(device_id)
+    validate_device_id(device_id, rs485_device_collection)
 
-    instrument = create_instrument(device_id)
+    instrument = create_instrument(device_id, rs485_device_collection)
     if instrument is None:
         return jsonify({
             "error": "Failed to create instrument"
@@ -183,12 +190,11 @@ def enable_probe_t2(device_id):
         instrument.write_register(registeraddress=T2_ENABLED_REGISTER, value=1, number_of_decimals=0, functioncode=6, signed=False)
         timestamp = get_current_timestamp
 
-        # update device_id-controller-settings.json
-        file = open(DEVICE01_CONTROLLER_SETTINGS_FILE_PATH, 'w+')
-        data = json.load(file)
-        data["isT2Enabled"] = 1
-        json.dump(data, file, ensure_ascii=False, indent=4)
-        file.close()
+        # update device-controller-settings
+        rs485_device_settings_collection.update_one(
+            {"device_name": device_id},     # Query to find the item
+            {"$set": {"isT2Enabled": True}} # Update the specific field
+        )
 
         return jsonify({
             "status": "enabled",
@@ -213,9 +219,9 @@ def disable_probe_t2(device_id):
     Returns:
         JSON: A JSON object indicating that probe T2 has been disabled or was already disabled and a timestamp
     """
-    validate_device_id(device_id)
+    validate_device_id(device_id, rs485_device_collection)
     
-    instrument = create_instrument(device_id)
+    instrument = create_instrument(device_id, rs485_device_collection)
     if instrument is None:
         return jsonify({
             "error": "Failed to create instrument"
@@ -231,11 +237,10 @@ def disable_probe_t2(device_id):
         instrument.write_register(registeraddress=T2_ENABLED_REGISTER, value=0, number_of_decimals=0, functioncode=6, signed=False)
         timestamp = get_current_timestamp
 
-        file = open(DEVICE01_CONTROLLER_SETTINGS_FILE_PATH, 'w+')
-        data = json.load(file)
-        data["isT2Enabled"] = 0
-        json.dump(data, file, ensure_ascii=False, indent=4)
-        file.close()
+        rs485_device_settings_collection.update_one(
+            {"device_name": device_id},
+            {"$set": {"isT2Enabled": False}}
+        )
 
         return jsonify({
             "status": "disabled",

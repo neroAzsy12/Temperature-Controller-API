@@ -1,8 +1,8 @@
 # utils/validators.py
 from flask import abort
 
-AVAILABLE_DEVICES = ["device01", "device02"]
-
-def validate_device_id(device_id):
-    if device_id not in AVAILABLE_DEVICES:
-        abort(404, description="Device not found")
+def validate_device_id(device_id, device_collection):
+    device = device_collection.find_one({'device_name': device_id})
+    
+    if device is None:
+        abort(404, description="Device was not found")

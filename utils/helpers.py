@@ -39,14 +39,10 @@ def fahrenheit_to_celsius(fahrenheit):
     celsius = (fahrenheit - 32) / 1.8
     return round(celsius, 1) # Round to the nearest tenth
 
-def create_instrument(device):
+def create_instrument(device, device_collection):
     """ Create and return a MinimalModBus instrument instance. """
     try:
-        print("Accessing json file for device: ", device)
-        # if device exists, get the necessary config for creating minimalmodbus instrument
-        file = open(DEVICE01_CONFIG_FILE_PATH, "r")
-        device_config = json.load(file)
-        file.close()
+        device_config = device_collection.find_one({"device_name": device})
 
         client = minimalmodbus.Instrument(port=device_config["port"], slaveaddress=device_config["slaveAddress"])
 
