@@ -250,3 +250,56 @@ def disable_probe_t2(device_id):
         return jsonify({
             "error": str(e)
         }), 500
+    
+@probe_blueprint.route('/probe/temperatures', methods = ['GET'])
+def read_temperatures(device_id):
+    """
+    Read the current Air probe temperature (T1) and the Evaporator probe temperature (T2)
+
+    This endpoint retrieves the current temperatures from both Probe T1, T2 and returns it in the specified unit (Celsius or Fahrenheit)
+    along with a timestamp, T1, and T2
+
+    Path Parameter:
+        device_id (str): Required. Specify which device you want the request for
+
+    Query Parameters:
+        unit (str): Optional. Specify the temperature unit:
+            - 'C' for Celsius (default)
+            - 'F' for Fahrenheit
+
+    Returns:
+        JSON response with the current temperature from Probes T1 and T2 in the specified unit and a timestamp
+    """
+    validate_device_id(device_id, rs485_device_collection)
+    
+    unit = request.args.get('unit', default='C', type=str).upper()
+
+    if unit not in ['C', 'F']:
+        return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
+    
+    instrument = create_instrument(device_id, rs485_device_collection)
+    if instrument is None:
+        return jsonify({"error": "Failed to create instrument"}), 500
+    
+    try:
+        t1_temperature = instrument.read_register(registeraddress=T1_AIR_PROBE_TEMPERATURE_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+        t2_temperature = instrument.read_register(registeraddress=T2_EVAPORATOR_PROBE_TEMPERATURE_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+
+        if unit == 'F':
+            t1_temperature = celsius_to_fahrenheit(t1_temperature)
+            t2_temperature = celsius_to_fahrenheit(t2_temperature)
+        
+        response = {
+            "unit": unit,
+            "timestamp": get_current_timestamp(),
+            "temperatures": {
+                "T1": t1_temperature,
+                "T2": t2_temperature
+            }
+        }
+
+        return jsonify(response), 200
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500

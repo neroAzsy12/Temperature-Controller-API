@@ -114,5 +114,6 @@ def get_manual_standby_status(device_id):
     """
     Gets the status of the manual standby mode from the temperature controller display
 
-    This endpoint checks status of standby mode from the temperature controller display
+    This endpoint checks status of standby mode from the temperature controller display, it is the power button
+    on the actual power display
     """    
