@@ -59,3 +59,7 @@ def get_device_config(device_id):
         return jsonify({
             "error": str(e)
         }), 500
+    
+@device_blueprint.route('/device/system-status', methods=['GET'])
+def get_device_status(device_config):
+    return None

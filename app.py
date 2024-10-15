@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from pymongo import MongoClient
+from routes.cabinet import cabinet_blueprint, init_app as init_cabinet
 from routes.compressor import compressor_blueprint, init_app as init_compressor
 from routes.device import device_blueprint, init_app as init_device
 from routes.probe import probe_blueprint, init_app as init_probe
@@ -18,6 +19,7 @@ def create_app():
     db = client.get_default_database()  # Automatically use the specified database
 
     # Register the probe blueprint with the '/api/v1'
+    app.register_blueprint(cabinet_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
     app.register_blueprint(compressor_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
     app.register_blueprint(device_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
     app.register_blueprint(probe_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
@@ -25,6 +27,7 @@ def create_app():
     app.register_blueprint(standby_blueprint, url_prefix='/temperature-controller/api/v1/<device_id>')
 
     # Initialize the collections needed for the routes
+    init_cabinet(app, db)
     init_compressor(app, db)
     init_device(app, db)
     init_probe(app, db)
