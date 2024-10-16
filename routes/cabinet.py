@@ -20,6 +20,18 @@ COMPRESSOR_OUTPUT_REGISTER = 137        # Read Only, 1 = Compressor is currently
 EVAPORATOR_FAN_OUTPUT_REGISTER = 138    # Read Only, 1 = Compressor is currently on, 0 = Compressor is currently off
 DEFROST_OUTPUT_REGISTRER = 139          # Read Only, 1 = Compressor is currently on, 0 = Compressor is currently off
 
+""" Standby Mode Register """
+STANDBY_REGISTER = 701
+
+""" SPL, SP, and SPH Registers """
+SETPOINT_LOW_REGISTER = 201
+SETPOINT_REGISTER = 203
+SETPOINT_HIGH_REGISTER = 202
+
+""" HY0 and HY1 Differential Registers """
+HY0_REGISTER = 204
+HY1_REGISTER = 205
+
 cabinet_blueprint = Blueprint('cabinet', __name__)
 rs485_device_collection = None
 rs485_device_settings_collection = None
@@ -90,6 +102,76 @@ def get_cabinet_status(device_id):
 
         return jsonify(response), 200
     except Exception as e: 
+        return jsonify({
+            "error": str(e)
+        }), 500
+
+@cabinet_blueprint.route('/cabinet/configurable-settings', methods = ["GET"])
+def get_configurable_settings(device_id):
+    """
+    Gets the configurable settings of the cabinet
+
+    This endpoint retrieves the current status of the cold cabinet,
+        - Standby Mode
+        - Set Point Low (SPL), (Celsius or Fahrenheit)
+        - Set Point High (SPL), (Celsius or Fahrenheit)
+        - Set Point (SP), (Celsius or Fahrenheit)
+        - HY0
+        - HY1
+
+    Path Parameter:
+        device_id (str): Required. Specify which device you want the request for
+
+    Query Parameters:
+        unit (str): Optional. Specify the temperature unit
+            - 'C' for Celsius (default)
+            - 'F' for Fahrenheit
+    
+    Returns:
+        JSON response with the current configurable settings, and a timestamp
+    """
+    validate_device_id(device_id, rs485_device_collection)
+
+    unit = request.args.get('unit', default='C', type=str).upper()
+    
+    if unit not in ['C', 'F']:
+        return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
+    
+    instrument = create_instrument(device_id, rs485_device_collection)
+    if instrument is None:
+        return jsonify({"error": "Failed to create instrument"}), 500
+    
+    try:
+        setpoint_low = instrument.read_register(registeraddress=SETPOINT_LOW_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+        setpoint_high = instrument.read_register(registeraddress=SETPOINT_HIGH_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+        setpoint = instrument.read_register(registeraddress=SETPOINT_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+        hy0 = instrument.read_register(registeraddress=HY0_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
+        hy1 = instrument.read_register(registeraddress=HY1_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
+        standby_mode_status = instrument.read_register(registeraddress=STANDBY_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
+
+        # Convert min and max to the same unit as the new setpoint
+        if unit == 'F':
+            setpoint_low = celsius_to_fahrenheit(setpoint_low)
+            setpoint_high = celsius_to_fahrenheit(setpoint_high)
+            setpoint = celsius_to_fahrenheit(setpoint)
+        
+        response = {
+            "timestamp": get_current_timestamp(),
+            "unit": unit,
+            "setpoints": {
+                "SPL": setpoint_low,
+                "SP": setpoint,
+                "SPH": setpoint_high
+            },
+            "differentials": {
+                "HY0": hy0,
+                "HY1": hy1
+            },
+            "standby_mode": "ON" if bool(standby_mode_status) else "OFF"
+        }
+
+        return jsonify(response), 200
+    except Exception as e:
         return jsonify({
             "error": str(e)
         }), 500
