@@ -77,16 +77,24 @@ def get_cabinet_status(device_id):
         return jsonify({"error": "Failed to create instrument"}), 500
     
     try:
+        setpoint_low = instrument.read_register(registeraddress=SETPOINT_LOW_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+        setpoint_high = instrument.read_register(registeraddress=SETPOINT_HIGH_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+        setpoint = instrument.read_register(registeraddress=SETPOINT_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+        hy0 = instrument.read_register(registeraddress=HY0_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
+        hy1 = instrument.read_register(registeraddress=HY1_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
+        standby_mode_status = instrument.read_register(registeraddress=STANDBY_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
         t1_temperature = instrument.read_register(registeraddress=T1_AIR_PROBE_TEMPERATURE_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
         t2_temperature = instrument.read_register(registeraddress=T2_EVAPORATOR_PROBE_TEMPERATURE_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+        evaporator_fan_status = instrument.read_register(registeraddress=EVAPORATOR_FAN_OUTPUT_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
+        compressor_status = instrument.read_register(registeraddress=COMPRESSOR_OUTPUT_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
+        defrost_status = instrument.read_register(registeraddress=DEFROST_OUTPUT_REGISTRER, number_of_decimals=0, functioncode=3, signed=False)
 
         if unit == 'F':
             t1_temperature = celsius_to_fahrenheit(t1_temperature)
             t2_temperature = celsius_to_fahrenheit(t2_temperature)
-        
-        evaporator_fan_status = instrument.read_register(registeraddress=EVAPORATOR_FAN_OUTPUT_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
-        compressor_status = instrument.read_register(registeraddress=COMPRESSOR_OUTPUT_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
-        defrost_status = instrument.read_register(registeraddress=DEFROST_OUTPUT_REGISTRER, number_of_decimals=0, functioncode=3, signed=False)
+            setpoint_low = celsius_to_fahrenheit(setpoint_low)
+            setpoint_high = celsius_to_fahrenheit(setpoint_high)
+            setpoint = celsius_to_fahrenheit(setpoint)
 
         response = {
             "timestamp": get_current_timestamp(),
@@ -97,7 +105,17 @@ def get_cabinet_status(device_id):
             "temperatures": {
                 "T1": t1_temperature,
                 "T2": t2_temperature
-            }
+            },
+            "setpoints": {
+                "SPL": setpoint_low,
+                "SP": setpoint,
+                "SPH": setpoint_high
+            },
+            "differentials": {
+                "HY0": hy0,
+                "HY1": hy1
+            },
+            "standby_mode": "ON" if bool(standby_mode_status) else "OFF"
         }
 
         return jsonify(response), 200
