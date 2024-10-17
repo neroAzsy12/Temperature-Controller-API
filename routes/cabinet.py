@@ -111,7 +111,7 @@ def get_cabinet_status(device_id):
 
         # Defrost related functions
         defrost_status = instrument.read_register(registeraddress=DEFROST_OUTPUT_REGISTRER, number_of_decimals=0, functioncode=3, signed=False)
-        defrost_start_mode = instrument.read_regiser(registeraddress=DEFROST_START_MODE_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
+        defrost_start_mode = instrument.read_register(registeraddress=DEFROST_START_MODE_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
         defrost_type_mode = instrument.read_register(registeraddress=DEFROST_TYPE_REIGSTER, number_of_decimals=0, functioncode=3, signed=False)
 
         if unit == 'F':
@@ -267,7 +267,7 @@ def get_configurable_settings(device_id):
         hy0 = instrument.read_register(registeraddress=HY0_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
         hy1 = instrument.read_register(registeraddress=HY1_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
         standby_mode_status = instrument.read_register(registeraddress=STANDBY_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
-        defrost_start_mode = instrument.read_regiser(registeraddress=DEFROST_START_MODE_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
+        defrost_start_mode = instrument.read_register(registeraddress=DEFROST_START_MODE_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
         defrost_type_mode = instrument.read_register(registeraddress=DEFROST_TYPE_REIGSTER, number_of_decimals=0, functioncode=3, signed=False)
 
         # Convert min and max to the same unit as the new setpoint
