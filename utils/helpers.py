@@ -18,9 +18,14 @@ def get_current_timestamp():
     return formatted_timestamp
 
 def celsius_to_fahrenheit(celsius):
-    """Convert Celsius to Fahrenheit and round to the nearest whole number."""
+    """Convert Celsius to Fahrenheit and round to the nearest tenth."""
     fahrenheit = (celsius * 1.8) + 32
     return round(fahrenheit, 1)
+
+def celsius_to_fahrenheit2(celsius):
+    """Convert Celsius to Fahrenheit and round to the nearest whole number."""
+    fahrenheit = (celsius * 1.8) + 32
+    return round(fahrenheit)
 
 def fahrenheit_to_celsius(fahrenheit):
     """Convert Fahrenheit to Celsius and round to the nearest tenth."""
