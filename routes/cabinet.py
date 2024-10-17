@@ -300,3 +300,74 @@ def get_configurable_settings(device_id):
         return jsonify({
             "error": str(e)
         }), 500
+
+@cabinet_blueprint.route('/cabinet/temperatures', methods = ["GET"])
+def get_all_temperatures(device_id):
+    """
+    Gets the temperatures of the cold cabinet
+
+    This endpoint retrieves the following temperatures of the cold cabinet,
+        - Set Point Low (SPL), (Celsius or Fahrenheit)
+        - Set Point High (SPL), (Celsius or Fahrenheit)
+        - Set Point (SP), (Celsius or Fahrenheit)
+        - T1
+        - T2
+
+    Path Parameter:
+        device_id (str): Required. Specify which device you want the request for
+
+    Query Parameters:
+        unit (str): Optional. Specify the temperature unit
+            - 'C' for Celsius (default)
+            - 'F' for Fahrenheit
+    
+    Returns:
+        JSON response with the current temperatures, and a timestamp
+    """
+    validate_device_id(device_id, rs485_device_collection)
+
+    unit = request.args.get('unit', default='C', type=str).upper()
+    
+    if unit not in ['C', 'F']:
+        return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
+    
+    instrument = create_instrument(device_id, rs485_device_collection)
+    if instrument is None:
+        return jsonify({"error": "Failed to create instrument"}), 500
+    
+    try:
+        # Setpoints
+        setpoint_low = instrument.read_register(registeraddress=SETPOINT_LOW_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+        setpoint_high = instrument.read_register(registeraddress=SETPOINT_HIGH_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+        setpoint = instrument.read_register(registeraddress=SETPOINT_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+        
+        # Differentials
+        t1_temperature = instrument.read_register(registeraddress=T1_AIR_PROBE_TEMPERATURE_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+        t2_temperature = instrument.read_register(registeraddress=T2_EVAPORATOR_PROBE_TEMPERATURE_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+
+        if unit == 'F':
+            t1_temperature = celsius_to_fahrenheit2(t1_temperature)
+            t2_temperature = celsius_to_fahrenheit2(t2_temperature)
+            setpoint_low = celsius_to_fahrenheit2(setpoint_low)
+            setpoint_high = celsius_to_fahrenheit2(setpoint_high)
+            setpoint = celsius_to_fahrenheit2(setpoint)
+
+        response = {
+            "timestamp": get_current_timestamp(),
+            "unit": unit,
+            "temperatures": {
+                "T1": t1_temperature,
+                "T2": t2_temperature
+            },
+            "setpoints": {
+                "SPL": setpoint_low,
+                "SP": setpoint,
+                "SPH": setpoint_high
+            },
+        }
+
+        return jsonify(response), 200
+    except Exception as e: 
+        return jsonify({
+            "error": str(e)
+        }), 500
