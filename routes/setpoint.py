@@ -190,6 +190,7 @@ def set_min_setpoint(device_id):
             max_setpoint = celsius_to_fahrenheit(max_setpoint)
             MIN_SETPOINT = -58
 
+        print('line 193')
         # Check if the new setpoint is within the allowed range
         if not (MIN_SETPOINT <= new_min_setpoint <= max_setpoint):
             return jsonify({
@@ -199,7 +200,6 @@ def set_min_setpoint(device_id):
         celsius_min_setpoint = fahrenheit_to_celsius(new_min_setpoint) if unit == 'F' else new_min_setpoint
         instrument.write_register(registeraddress=MINIMUM_SETPOINT_REGISTER, value=float(celsius_min_setpoint), number_of_decimals=1, functioncode=6, signed=True)
         
-        print('middle of try block')
         result = rs485_device_settings_collection.find_one(
             {"device_name": device_id},
             {"currentMode": 1, "_id": 0}
