@@ -166,7 +166,7 @@ def set_min_setpoint(device_id):
     validate_device_id(device_id, rs485_device_collection)
 
     MIN_SETPOINT = -50                                              # Min setpoint allowed, -50 C (-58 F)
-    new_min_setpoint = request.json.get('min_setpoint')             # get from request body
+    new_min_setpoint = float(request.json.get('min_setpoint'))      # get from request body
     unit = request.args.get('unit', default='C', type=str).upper()  # get from query parameter
 
     if new_min_setpoint is None:
@@ -179,10 +179,8 @@ def set_min_setpoint(device_id):
     if instrument is None:
         return jsonify({"error": "Failed to create instrument"}), 500
     
-    print('before try block')
     # Read current max setpoint
     try:
-        print('inside try block')
         max_setpoint = instrument.read_register(registeraddress=MAXIMUM_SETPOINT_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
         
         # Convert MIN_SETPOINT and max_setpoint to the same unit as the new min setpoint
@@ -190,14 +188,12 @@ def set_min_setpoint(device_id):
             max_setpoint = celsius_to_fahrenheit(max_setpoint)
             MIN_SETPOINT = -58
 
-        print('line 193')
-        print(type(new_min_setpoint))
         # Check if the new setpoint is within the allowed range
         if not (MIN_SETPOINT <= new_min_setpoint <= max_setpoint):
             return jsonify({
                 "error": f"Minimum setpoint must be betweeen {MIN_SETPOINT} and {max_setpoint} {unit}."
             }), 400
-        print('line 199')
+        
         celsius_min_setpoint = fahrenheit_to_celsius(new_min_setpoint) if unit == 'F' else new_min_setpoint
         instrument.write_register(registeraddress=MINIMUM_SETPOINT_REGISTER, value=float(celsius_min_setpoint), number_of_decimals=1, functioncode=6, signed=True)
         
@@ -211,8 +207,6 @@ def set_min_setpoint(device_id):
             {"device_name": device_id},
             {"$set": {f"{mode}.minSetPoint": celsius_min_setpoint}}
         )
-
-        print('end of try block')
 
         return jsonify({
             "status": "Minimum setpoint updated",
