@@ -179,8 +179,10 @@ def set_min_setpoint(device_id):
     if instrument is None:
         return jsonify({"error": "Failed to create instrument"}), 500
     
+    print('before try block')
     # Read current max setpoint
     try:
+        print('inside try block')
         max_setpoint = instrument.read_register(registeraddress=MAXIMUM_SETPOINT_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
         
         # Convert MIN_SETPOINT and max_setpoint to the same unit as the new min setpoint
@@ -207,6 +209,8 @@ def set_min_setpoint(device_id):
             {"device_name": device_id},
             {"$set": {f"{mode}.minSetPoint": celsius_min_setpoint}}
         )
+
+        print('end of try block')
 
         return jsonify({
             "status": "Minimum setpoint updated",
