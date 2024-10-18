@@ -323,7 +323,7 @@ def turn_standby_off(device_id):
         }), 500
 
 @cabinet_blueprint.route('/cabinet/light/on', methods = ["POST"])
-def turn_standby_off(device_id):
+def turn_cabinet_lights_on(device_id):
     validate_device_id(device_id, rs485_device_collection)
     
     instrument = create_instrument(device_id, rs485_device_collection)
@@ -353,7 +353,7 @@ def turn_standby_off(device_id):
 
 
 @cabinet_blueprint.route('/cabinet/light/off', methods = ["POST"])
-def turn_standby_off(device_id):
+def turn_cabinet_lights_off(device_id):
     validate_device_id(device_id, rs485_device_collection)
     
     instrument = create_instrument(device_id, rs485_device_collection)
