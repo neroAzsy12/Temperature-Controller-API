@@ -111,6 +111,7 @@ def get_cabinet_status(device_id):
         evaporator_fan_status = instrument.read_register(registeraddress=EVAPORATOR_FAN_OUTPUT_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
         compressor_status = instrument.read_register(registeraddress=COMPRESSOR_OUTPUT_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
         door_heater_status = instrument.read_register(registeraddress=AUXILLARY_OUTPUT_1_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
+        cabinet_lights_status = instrument.read_register(registeraddress=LIGHTS_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
 
         # Defrost related functions
         defrost_status = instrument.read_register(registeraddress=DEFROST_OUTPUT_REGISTRER, number_of_decimals=0, functioncode=3, signed=False)
@@ -131,6 +132,7 @@ def get_cabinet_status(device_id):
                 "evap_fan_status": "ON" if bool(evaporator_fan_status) else "OFF",
                 "compressor_status": "ON" if bool(compressor_status) else "OFF",
                 "door_heater_status": "ON" if bool(door_heater_status) else "OFF",
+                "cabinet_lights_status": "ON" if bool(cabinet_lights_status) else "OFF",
                 "defrost_status": "ON" if bool(defrost_status) else "OFF"
             },
             "defrost": {
@@ -341,7 +343,7 @@ def turn_cabinet_lights_on(device_id):
         
         response = {
             "timestamp": get_current_timestamp(),
-            "lights_status": "ON"
+            "cabinet_lights_status": "ON"
         }
 
         return jsonify(response), 200
@@ -371,7 +373,7 @@ def turn_cabinet_lights_off(device_id):
         
         response = {
             "timestamp": get_current_timestamp(),
-            "lights_status": "OFF"
+            "cabinet_lights_status": "OFF"
         }
 
         return jsonify(response), 200
