@@ -199,6 +199,7 @@ def set_min_setpoint(device_id):
         celsius_min_setpoint = fahrenheit_to_celsius(new_min_setpoint) if unit == 'F' else new_min_setpoint
         instrument.write_register(registeraddress=MINIMUM_SETPOINT_REGISTER, value=float(celsius_min_setpoint), number_of_decimals=1, functioncode=6, signed=True)
         
+        print('middle of try block')
         result = rs485_device_settings_collection.find_one(
             {"device_name": device_id},
             {"currentMode": 1, "_id": 0}
