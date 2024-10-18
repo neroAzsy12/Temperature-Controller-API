@@ -40,7 +40,7 @@ def set_hy0_differential(device_id):
     """
     validate_device_id(device_id, rs485_device_collection)
 
-    hy0_differential = request.json.get("differential")
+    hy0_differential = int(request.json.get("differential"))
     if hy0_differential is None:
         return jsonify({"error": "Differential value is required"}), 400
     
@@ -114,7 +114,7 @@ def set_hy1_differential(device_id):
     """
     validate_device_id(device_id, rs485_device_collection)
 
-    hy1_differential = request.json.get("differential")
+    hy1_differential = int(request.json.get("differential"))
     if hy1_differential is None:
         return jsonify({"error": "Differential value is required"}), 400
     

@@ -47,7 +47,7 @@ def set_setpoint(device_id):
     """
     validate_device_id(device_id, rs485_device_collection)
 
-    new_setpoint = request.json.get('setpoint')                     # get from request body
+    new_setpoint = float(request.json.get('setpoint'))              # get from request body
     unit = request.args.get('unit', default='C', type=str).upper()  # get from query parameter
 
     if new_setpoint is None:
@@ -282,7 +282,7 @@ def set_max_setpoint(device_id):
     validate_device_id(device_id, rs485_device_collection)
 
     MAX_SETPOINT = 110                                              # Max setpoint allowed, 110 C (180 F)
-    new_max_setpoint = request.json.get('max_setpoint')             # get from request body
+    new_max_setpoint = float(request.json.get('max_setpoint'))      # get from request body
     unit = request.args.get('unit', default='C', type=str).upper()  # get from query parameter
 
     if new_max_setpoint is None:
