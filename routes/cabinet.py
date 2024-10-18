@@ -131,7 +131,7 @@ def get_cabinet_status(device_id):
                 "defrost_status": "ON" if bool(defrost_status) else "OFF"
             },
             "defrost": {
-                "defrost _start_mode": DEFROST_START_MODE_MAP[defrost_start_mode],
+                "defrost_start_mode": DEFROST_START_MODE_MAP[defrost_start_mode],
                 "defrost_type": DEFROST_TYPE_MAP[defrost_type_mode]
             },
             "temperatures": {
