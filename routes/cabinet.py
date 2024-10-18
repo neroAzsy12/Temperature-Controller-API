@@ -24,6 +24,9 @@ AUXILLARY_OUTPUT_1_REGISTER = 140       # Read Only, 1 = Door Heater is currentl
 """ Standby Mode Register """
 STANDBY_REGISTER = 701
 
+""" Lights Registers """
+LIGHTS_REGISTER = 707
+
 """ SPL, SP, and SPH Registers """
 SETPOINT_LOW_REGISTER = 201
 SETPOINT_REGISTER = 203
@@ -310,6 +313,65 @@ def turn_standby_off(device_id):
                 "defrost_status": "ON" if bool(defrost_status) else "OFF"
             },
             "standby_mode": "OFF"
+        }
+
+        return jsonify(response), 200
+        
+    except Exception as e: 
+        return jsonify({
+            "error": str(e)
+        }), 500
+
+@cabinet_blueprint.route('/cabinet/light/on', methods = ["POST"])
+def turn_standby_off(device_id):
+    validate_device_id(device_id, rs485_device_collection)
+    
+    instrument = create_instrument(device_id, rs485_device_collection)
+    if instrument is None:
+        return jsonify({"error": "Failed to create instrument"}), 500
+    
+    try:
+        lights_enabled = instrument.read_register(registeraddress=LIGHTS_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
+        if lights_enabled:
+            return jsonify({
+                "status": "Lights for the cabinet already on"
+            }), 200
+        
+        instrument.write_register(registeraddress=LIGHTS_REGISTER, value=int(1), number_of_decimals=0, functioncode=6, signed=False)
+        
+        response = {
+            "timestamp": get_current_timestamp(),
+            "lights_status": "ON"
+        }
+
+        return jsonify(response), 200
+        
+    except Exception as e: 
+        return jsonify({
+            "error": str(e)
+        }), 500
+
+
+@cabinet_blueprint.route('/cabinet/light/off', methods = ["POST"])
+def turn_standby_off(device_id):
+    validate_device_id(device_id, rs485_device_collection)
+    
+    instrument = create_instrument(device_id, rs485_device_collection)
+    if instrument is None:
+        return jsonify({"error": "Failed to create instrument"}), 500
+    
+    try:
+        lights_enabled = instrument.read_register(registeraddress=LIGHTS_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
+        if not lights_enabled:
+            return jsonify({
+                "status": "Lights for the cabinet already off"
+            }), 200
+        
+        instrument.write_register(registeraddress=LIGHTS_REGISTER, value=int(0), number_of_decimals=0, functioncode=6, signed=False)
+        
+        response = {
+            "timestamp": get_current_timestamp(),
+            "lights_status": "OFF"
         }
 
         return jsonify(response), 200
