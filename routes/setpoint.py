@@ -191,6 +191,7 @@ def set_min_setpoint(device_id):
             MIN_SETPOINT = -58
 
         print('line 193')
+        print(type(new_min_setpoint))
         # Check if the new setpoint is within the allowed range
         if not (MIN_SETPOINT <= new_min_setpoint <= max_setpoint):
             return jsonify({
