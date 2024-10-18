@@ -196,7 +196,7 @@ def set_min_setpoint(device_id):
             return jsonify({
                 "error": f"Minimum setpoint must be betweeen {MIN_SETPOINT} and {max_setpoint} {unit}."
             }), 400
-        
+        print('line 199')
         celsius_min_setpoint = fahrenheit_to_celsius(new_min_setpoint) if unit == 'F' else new_min_setpoint
         instrument.write_register(registeraddress=MINIMUM_SETPOINT_REGISTER, value=float(celsius_min_setpoint), number_of_decimals=1, functioncode=6, signed=True)
         
