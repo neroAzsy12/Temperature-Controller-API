@@ -227,7 +227,7 @@ def get_all_temperatures(device_id):
             "error": str(e)
         }), 500
 
-@cabinet_blueprint.route('/cabinet/standby/on', methods = ["GET"])
+@cabinet_blueprint.route('/cabinet/standby/on', methods = ["POST"])
 def turn_standby_on(device_id):
     validate_device_id(device_id, rs485_device_collection)
 
@@ -273,7 +273,7 @@ def turn_standby_on(device_id):
             "error": str(e)
         }), 500
 
-@cabinet_blueprint.route('/cabinet/standby/off', methods = ["GET"])
+@cabinet_blueprint.route('/cabinet/standby/off', methods = ["POST"])
 def turn_standby_off(device_id):
     validate_device_id(device_id, rs485_device_collection)
 
