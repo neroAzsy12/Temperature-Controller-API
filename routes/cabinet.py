@@ -233,7 +233,7 @@ async def get_all_temperatures(device_id):
         }), 500
 
 @cabinet_blueprint.route('/cabinet/standby/on', methods = ["POST"])
-async def turn_standby_on(device_id):
+async def enable_cabinet_standby(device_id):
     validate_device_id(device_id, rs485_device_collection)
 
     unit = request.args.get('unit', default='C', type=str).upper()
@@ -279,7 +279,7 @@ async def turn_standby_on(device_id):
         }), 500
 
 @cabinet_blueprint.route('/cabinet/standby/off', methods = ["POST"])
-async def turn_standby_off(device_id):
+async def disable_cabinet_standby(device_id):
     validate_device_id(device_id, rs485_device_collection)
 
     unit = request.args.get('unit', default='C', type=str).upper()
