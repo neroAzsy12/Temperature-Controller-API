@@ -38,9 +38,13 @@ async def set_hy0_differential(device_id):
     Returns:
         - JSON response with the newly set HY0 differential and a timestamp
     """
+    data = await request.get_json()
+    if data is None: 
+        return jsonify({"error": "Invalid JSON"}), 500
+    
     validate_device_id(device_id, rs485_device_collection)
 
-    hy0_differential = int(request.json.get("differential"))
+    hy0_differential = int(data.get("differential"))
     if hy0_differential is None:
         return jsonify({"error": "Differential value is required"}), 400
     
@@ -112,9 +116,13 @@ async def set_hy1_differential(device_id):
     Returns:
         - JSON response with the newly set differential and a timestamp
     """
+    data = await request.get_json()
+    if data is None:
+        return jsonify({"error": "Invalid JSON"}), 500
+    
     validate_device_id(device_id, rs485_device_collection)
 
-    hy1_differential = int(request.json.get("differential"))
+    hy1_differential = int(data.get("differential"))
     if hy1_differential is None:
         return jsonify({"error": "Differential value is required"}), 400
     
@@ -186,9 +194,12 @@ async def set_compressor_rest_time(device_id):
     Returns:
         - JSON response with the newly set rest time and a timestamp
     """
+    data = await request.get_json()
+    if data is None: 
+        return jsonify({"error": "Invalid JSON"}), 500
     validate_device_id(device_id, rs485_device_collection)
 
-    crt = request.json.get("rest_time")
+    crt = int(data.get("rest_time"))
     if crt is None:
         return jsonify({"error": "Rest time value is required"}), 400
     
