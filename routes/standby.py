@@ -163,7 +163,7 @@ async def enable_manual_standby(device_id):
             "error": str(e)
         }), 500
 
-@standby_blueprint.route('/standby/off', methods = ["POST"])
+@standby_blueprint.route('/standby/manual/off', methods = ["POST"])
 async def turn_standby_off(device_id):
     validate_device_id(device_id, rs485_device_collection)
 
