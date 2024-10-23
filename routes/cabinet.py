@@ -235,11 +235,6 @@ async def get_all_temperatures(device_id):
 @cabinet_blueprint.route('/cabinet/standby/on', methods = ["POST"])
 async def enable_cabinet_standby(device_id):
     validate_device_id(device_id, rs485_device_collection)
-
-    unit = request.args.get('unit', default='C', type=str).upper()
-    
-    if unit not in ['C', 'F']:
-        return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
     
     instrument = create_instrument(device_id, rs485_device_collection)
     if instrument is None:
@@ -282,11 +277,6 @@ async def enable_cabinet_standby(device_id):
 async def disable_cabinet_standby(device_id):
     validate_device_id(device_id, rs485_device_collection)
 
-    unit = request.args.get('unit', default='C', type=str).upper()
-    
-    if unit not in ['C', 'F']:
-        return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
-    
     instrument = create_instrument(device_id, rs485_device_collection)
     if instrument is None:
         return jsonify({"error": "Failed to create instrument"}), 500

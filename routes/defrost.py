@@ -84,6 +84,10 @@ def init_app(app, db):
 async def get_defrost_status(device_id):
     validate_device_id(device_id, rs485_device_collection)
 
+    unit = request.args.get('unit', default='C', type=str).upper()
+    if unit not in ['C', 'F']:
+        return jsonify({"error": "Invalid unit specified. Use 'C' for Celsius or 'F' for Fahrenheit."}), 400
+
     instrument = create_instrument(device_id, rs485_device_collection)
     if instrument is None:
         return jsonify({"error": "Failed to create instrument"}), 500
@@ -93,6 +97,10 @@ async def get_defrost_status(device_id):
         defrost_start_mode = instrument.read_register(registeraddress=DEFROST_START_MODE_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
         defrost_type = instrument.read_register(registeraddress=DEFROST_TYPE_REIGSTER, number_of_decimals=0, functioncode=3, signed=False)
         defrost_display = instrument.read_register(registeraddress=DEFROST_DISPLAY_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
+        defrost_end_temperature = instrument.read_register(registeraddress=DEFROST_END_TEMPERATURE_REGISTER, number_of_decimals=1, functioncode=3, signed=True)
+
+        if unit == 'F':
+            defrost_end_temperature = celsius_to_fahrenheit(defrost_end_temperature)
 
         response = {
             "timestamp": get_current_timestamp(),
@@ -108,7 +116,8 @@ async def get_defrost_status(device_id):
             "display": {
                 "mode": DEFROST_DISPLAY_MAP[defrost_display]["type"],
                 "description": DEFROST_DISPLAY_MAP[defrost_display]["description"]
-            }
+            },
+            "end_temperature": defrost_end_temperature
         }
 
         return jsonify(response), 200
@@ -174,6 +183,40 @@ async def turn_defrost_off(device_id):
         return jsonify({
             "status": 'disabled',
             "timestamp": get_current_timestamp()
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500
+
+@defrost_blueprint.route('/defrost/start-mode', methods = ['POST'])
+async def set_defrost_start_mode(device_id):
+    data = await request.get_json()
+    if data is None:
+        return jsonify({"error": "Invalid JSON"}), 500
+    
+    validate_device_id(device_id, rs485_device_collection)
+    
+    start_mode = int(data.get("start_mode")) 
+    if start_mode is None:
+        return jsonify({"error": "Start Mode for defrost is required"}), 400
+
+    instrument = create_instrument(device_id, rs485_device_collection)
+    if instrument is None:
+        return jsonify({"error": "Failed to create instrument"}), 500
+    
+    try: 
+        if not (0 <= start_mode <= 3):
+            return jsonify({
+                "error": "start_mode must be between 0 and 3"
+                }), 400
+        
+        instrument.write_register(registeraddress=DEFROST_START_MODE_REGISTER, value=int(start_mode), number_of_decimals=0, functioncode=6, signed=False)
+
+        return jsonify({
+            "timestamp": get_current_timestamp(),
+            "mode": DEFROST_START_MODE_MAP[start_mode]["type"],
+            "description": DEFROST_START_MODE_MAP[start_mode]["description"]
         }), 200
     except Exception as e:
         return jsonify({
