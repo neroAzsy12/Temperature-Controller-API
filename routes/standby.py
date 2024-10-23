@@ -155,7 +155,7 @@ async def enable_manual_standby(device_id):
         
         instrument.write_register(registeraddress=STANDBY_REGISTER, value=int(1), number_of_decimals=0, functioncode=6, signed=False)
         return jsonify({
-            "status": "Standby Mode is on",
+            "manual_standby_status": "enabled",
             "timestamp": get_current_timestamp()
         }), 200
     except Exception as e: 
@@ -164,7 +164,7 @@ async def enable_manual_standby(device_id):
         }), 500
 
 @standby_blueprint.route('/standby/manual/off', methods = ["POST"])
-async def turn_standby_off(device_id):
+async def disable_manual_standby(device_id):
     validate_device_id(device_id, rs485_device_collection)
 
     instrument = create_instrument(device_id, rs485_device_collection)
@@ -174,16 +174,16 @@ async def turn_standby_off(device_id):
         }), 500
     
     try:
-        standby_enabled = instrument.read_register(registeraddress=STANDBY_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
-        if not standby_enabled:
+        manual_standby_enabled = instrument.read_register(registeraddress=MANUAL_STANDBY_REGISTER, number_of_decimals=0, functioncode=3, signed=False)
+        if not manual_standby_enabled:
             return jsonify({
-                "status": "Device is already not in standby mode"
+                "status": "Device has already disabled manual standby mode"
             }), 200
         
-        instrument.write_register(registeraddress=STANDBY_REGISTER, value=int(0), number_of_decimals=0, functioncode=6, signed=False)
+        instrument.write_register(registeraddress=MANUAL_STANDBY_REGISTER, value=int(0), number_of_decimals=0, functioncode=6, signed=False)
         
         return jsonify({
-            "status": "Standby Mode is off",
+            "manual_standby_status": "disabled",
             "timestamp": get_current_timestamp()
         }), 200
     except Exception as e: 
