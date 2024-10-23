@@ -10,7 +10,7 @@ from utils.validators import (
 MANUAL_STANDBY_REGISTER = 700   # Register for Manual Standby (enable/disable the power button on display)
 STANDBY_REGISTER = 701          # Register for Standby (set on/off for standby)
 
-standby_blueprint = Blueprint("standby", __name__, url_prefix='/standby')
+standby_blueprint = Blueprint("standby", __name__)
 rs485_device_collection = None
 rs485_device_settings_collection = None
 
