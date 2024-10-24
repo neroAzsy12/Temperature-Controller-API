@@ -290,3 +290,36 @@ async def set_defrost_display(device_id):
         return jsonify({
             "error": str(e)
         }), 500
+
+@defrost_blueprint.route('/defrost/end-temperature', methods = ['POST'])
+async def set_end_temperature(device_id):
+    data = await request.get_json()
+    if data is None:
+        return jsonify({"error": "Invalid JSON"}), 500 
+    
+    validate_device_id(device_id)
+
+    defrost_end_temperature = int(data.get("defrost_end_temperature"))
+    if defrost_end_temperature is None:
+        return jsonify({"error": "Defrost end temperature is required"}), 400
+    
+    instrument = create_instrument(device_id, rs485_device_collection)
+    if instrument is None:
+        return jsonify({"error": "Failed to create instrument"}), 500
+    
+    try:
+        if not (-50 <= defrost_end_temperature <= 110):
+            return jsonify({
+                "error": "defrost_end_temperature must be between -50 and 110"
+            }), 400
+        
+        instrument.write_register(registeraddress=DEFROST_END_TEMPERATURE_REGISTER, value=float(defrost_end_temperature), number_of_decimals=1, functioncode=6, signed=True)
+
+        return jsonify({
+            "timestamp": get_current_timestamp(),
+            "end_temperature": defrost_end_temperature
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500
