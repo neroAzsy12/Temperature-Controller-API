@@ -222,3 +222,71 @@ async def set_defrost_start_mode(device_id):
         return jsonify({
             "error": str(e)
         }), 500
+
+@defrost_blueprint.route('/defrost/type', methods = ['POST'])
+async def set_defrost_type(device_id):
+    data = await request.get_json()
+    if data is None:
+        return jsonify({"error": "Invalid JSON"}), 500 
+    
+    validate_device_id(device_id)
+
+    defrost_type = int(data.get("defrost_type"))
+    if defrost_type is None:
+        return jsonify({"error": "Defrost type is required"}), 400
+    
+    instrument = create_instrument(device_id, rs485_device_collection)
+    if instrument is None:
+        return jsonify({"error": "Failed to create instrument"}), 500
+    
+    try:
+        if not (0 <= defrost_type <= 2):
+            return jsonify({
+                "error": "defrost_type must be between 0 and 2"
+            }), 400
+        
+        instrument.write_register(registeraddress=DEFROST_TYPE_REIGSTER, value=int(defrost_type), number_of_decimals=0, functioncode=6, signed=False)
+
+        return jsonify({
+            "timestamp": get_current_timestamp(),
+            "defrost_type": DEFROST_TYPE_MAP[defrost_type]['type'],
+            "description": DEFROST_TYPE_MAP[defrost_type]['description']
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500
+    
+@defrost_blueprint.route('/defrost/display', methods = ['POST'])
+async def set_defrost_display(device_id):
+    data = await request.get_json()
+    if data is None:
+        return jsonify({"error": "Invalid JSON"}), 500
+    
+    validate_device_id(device_id)
+
+    display_mode = int(data.get("display"))
+    if display_mode is None:
+        return jsonify({"error": "Display Mode for defrost is required"}), 400
+    
+    instrument = create_instrument(device_id, rs485_device_collection)
+    if instrument is None:
+        return jsonify({"error": "Failed to create instrument"}), 500
+    
+    try:
+        if not (0 <= display_mode <= 3):
+            return jsonify({
+                "error": "display must be between 0 and 3"
+            }), 400
+        
+        instrument.write_register(registeraddress=DEFROST_DISPLAY_REGISTER, value=int(display_mode), number_of_decimals=0, functioncode=6, signed=False)
+        
+        return jsonify({
+            "timestamp": get_current_timestamp(),
+            "display_mode": DEFROST_DISPLAY_MAP[display_mode]['type'],
+            "description": DEFROST_DISPLAY_MAP[display_mode]['description']
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500
